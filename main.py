@@ -79,30 +79,27 @@ if __name__ == "__main__":
     model_used = "llama3.2"
     dataset_records = []
 
-    all_py_files = get_all_python_files("raw_code")
+    file_path = "raw_code/fibonacci.py"
+    print(f"\nProccessing {file_path}")
+    functions = extract_functions_from_file(file_path)
+    for i, func in enumerate(functions):
+        print(f"\nFunction {i + 1}:\n{func}\n{'=' * 40}")
 
-    for file_path in all_py_files:
-        print(f"\n📄 Processing file: {file_path}")
-        functions = extract_functions_from_file(file_path)
+        doc = generate_doc_with_ollama(func)
+        print(f"\n🧠 Generated Doc:\n{doc}\n{'-' * 40}")
 
-        for i, func in enumerate(functions):
-            print(f"\nFunction {i+1}:\n{func}\n{'='*40}")
+        try:
+            func_name = func.strip().split('\n')[0].split('def')[1].split('(')[0].strip()
+        except:
+            func_name = f"function_{i + 1}"
 
-            doc = generate_doc_with_ollama(func)
-            print(f"\n🧠 Generated Doc:\n{doc}\n{'-'*40}")
+        dataset_records.append({
+            "filename": os.path.basename(file_path),
+            "function_name": func_name,
+            "model": model_used,
+            "input_code": func,
+            "generated_doc": doc
+        })
 
-            try:
-                func_name = func.strip().split('\n')[0].split('def')[1].split('(')[0].strip()
-            except:
-                func_name = f"function_{i+1}"
-
-            dataset_records.append({
-                "filename": os.path.basename(file_path),
-                "function_name": func_name,
-                "model": model_used,
-                "input_code": func,
-                "generated_doc": doc
-            })
-
-    save_to_csv("output/generated_docs.csv", dataset_records)
-    print("\n✅ Saved dataset to output/generated_docs.csv")
+    save_to_csv("output/generated_docs_fibonacci.csv", dataset_records)
+    print("\n✅ Saved dataset to output/generated_docs_fibonacci.csv")
