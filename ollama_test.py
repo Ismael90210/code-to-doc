@@ -23,10 +23,10 @@ def _ollama_responses(model_name, prompt):
                 if data.get("done", False):
                     break
             except json.JSONDecodeError:
-                print("\n⚠️ Skipped a malformed line")
+                print("\n Skipped a malformed line")
                 continue
 
-    print("\n✅ Done.\n")
+    print("\n Done.\n")
 
 # Call each model
 _ollama_responses("llama3.2", "Explain the Fibonacci function.")
