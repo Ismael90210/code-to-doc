@@ -1,0 +1,79 @@
+function_name,model,input_code,generated_doc
+add,llama3.2,"def add(a, b):
+    return a + b","Here is a concise and helpful docstring for the `add` function:
+```
+def add(a, b):
+    """"""
+    Returns the sum of two numbers.
+
+    Args:
+        a (int or float): The first number to add.
+        b (int or float): The second number to add.
+
+    Returns:
+        int or float: The sum of a and b.
+
+    Raises:
+        TypeError: If either a or b is not a numeric type.
+    """"""
+    return a + b
+```
+This docstring provides:
+
+* A brief description of the function's purpose
+* Information about the function's arguments (including their data types)
+* Information about the function's return value
+* A note about any potential exceptions that may be raised
+
+Note that this is just one possible way to write a docstring for this function. You can customize it to fit your specific needs and style."
+say_hello,llama3.2,"def say_hello():
+    print(""Hello!"")","Here is a concise and helpful documentation string for the `say_hello` function:
+
+```python
+def say_hello():
+    """"""
+    Prints 'Hello!' to the console.
+
+    This function serves as a simple greeting tool, intended for demonstration or testing purposes.
+    """"""
+    print(""Hello!"")
+```
+
+This docstring provides:
+
+- A brief description of what the function does
+- Information about its purpose (for example, it's used for demonstration or testing)
+- Any additional context that might be useful to someone using this function
+
+It is good practice to follow Google Python Style Guide and use triple quotes to enclose your documentation string."
+fibonacci,llama3.2,"def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)","Here is a concise and informative docstring for the `fibonacci` function:
+
+```python
+def fibonacci(n):
+    """"""
+    Calculate the nth Fibonacci number.
+
+    The Fibonacci sequence is a series of numbers where a number is the sum of the two preceding ones, usually starting with 0 and 1. This function uses recursion to calculate the nth Fibonacci number.
+
+    Args:
+        n (int): The position of the Fibonacci number to be calculated.
+
+    Returns:
+        int: The nth Fibonacci number.
+
+    Raises:
+        ValueError: If n is not a non-negative integer.
+    """"""
+    if n <= 1:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+```
+
+This docstring provides:
+
+* A brief description of the function's purpose and behavior.
+* Information about the input parameter `n`.
+* An explanation of what"
