@@ -27,7 +27,7 @@ def generate_doc_with_ollama(code_snippet, model="llama3.2", max_chars=800):
     """
     Sends a function to the Ollama API and returns a generated docstring.
     """
-    prompt = f"Generate a concise and helpful documentation string for the following Python function:\n\n{code_snippet}"
+    prompt = f"Generate a concise and helpful documentation string for the following Python function. Above your documentation, provide an all caps label stating where the documentation starts. Provide the amount of time taken to complete the task:\n\n{code_snippet}"
 
     try:
         response = requests.post(
@@ -86,7 +86,7 @@ if __name__ == "__main__":
         print(f"\nFunction {i + 1}:\n{func}\n{'=' * 40}")
 
         doc = generate_doc_with_ollama(func)
-        print(f"\n🧠 Generated Doc:\n{doc}\n{'-' * 40}")
+        print(f"\n Generated Doc:\n{doc}\n{'-' * 40}")
 
         try:
             func_name = func.strip().split('\n')[0].split('def')[1].split('(')[0].strip()
@@ -102,4 +102,4 @@ if __name__ == "__main__":
         })
 
     save_to_csv("output/generated_docs_fibonacci.csv", dataset_records)
-    print("\n✅ Saved dataset to output/generated_docs_fibonacci.csv")
+    print("\n Saved dataset to output/generated_docs_fibonacci.csv")
