@@ -15,6 +15,6 @@ Parameter sizes:
 - qwen2.5-coder
   - 0.5b
 - llama3.2/3.1
-  - 8b
+  - 1b
 - deepseek-r1
   - 1.5b
