@@ -23,11 +23,11 @@ def extract_functions_from_file(file_path):
 
     return functions
 
-def generate_doc_with_ollama(code_snippet, model="llama3.2", max_chars=800):
+def generate_doc_with_ollama(code_snippet, model, max_chars=800):
     """
     Sends a function to the Ollama API and returns a generated docstring.
     """
-    prompt = f"Generate a concise and helpful documentation string for the following Python function. Above your documentation, provide an all caps label stating where the documentation starts. Provide the amount of time taken to complete the task:\n\n{code_snippet}"
+    prompt = f"Generate a concise and helpful documentation string for the following Python functions. Above your documentation, provide an all caps label stating where the documentation starts, name it GENERATED DOCUMENTATION. Provide the amount of time taken to complete the task at the end of the file:\n\n{code_snippet}"
 
     try:
         response = requests.post(
@@ -76,7 +76,10 @@ def get_all_python_files(directory):
     return py_files
 
 if __name__ == "__main__":
-    model_used = "llama3.2"
+    print("Available models:\n")
+    print("llama3.2:1b, qwen2.5-coder:0.5b, deepseek-r1:1.5b")
+
+    model_used = input("\nEnter model name: ")
     dataset_records = []
 
     file_path = "raw_code/fibonacci.py"
@@ -85,7 +88,7 @@ if __name__ == "__main__":
     for i, func in enumerate(functions):
         print(f"\nFunction {i + 1}:\n{func}\n{'=' * 40}")
 
-        doc = generate_doc_with_ollama(func)
+        doc = generate_doc_with_ollama(func, model_used)
         print(f"\n Generated Doc:\n{doc}\n{'-' * 40}")
 
         try:
