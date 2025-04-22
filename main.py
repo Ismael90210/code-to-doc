@@ -76,6 +76,7 @@ def get_all_python_files(directory):
     return py_files
 
 if __name__ == "__main__":
+    #user input
     print("Available models:\n")
     print("llama3.2:1b, qwen2.5-coder:0.5b, deepseek-r1:1.5b")
 
