@@ -3,6 +3,16 @@ import requests
 import json
 import csv
 import os
+from prompt_techniques import PromptTechniques
+#examples for few shot
+examples = [{"input": "def add(a, b): return a + b", "output": "Adds two numbers."}, {"input": "def greet(name): print(f\"Hello, {name}\")", "output": "Greets a user by name."},
+            {"input":"def DFS_REC(adj, visited, curr, result: "
+                     "visited[curr] = True"
+                     "result.append(curr)"
+                     "for i in range(len(adj)):"
+                     "  if not visited[i] and adj[s][i]== 1:"
+                     "     DFS_REC(adj, visited, curr, result)",
+             "output": "Recursively visits all adjacent vertices that are not visited yet. Parameters: adj = adjaceny matrix of all adjacent vertices, visited = list of booleans tracking which vertices have been visited, curr = current vertex, result "}]
 
 def extract_functions_from_file(file_path):
     """
@@ -26,9 +36,10 @@ def extract_functions_from_file(file_path):
 def generate_doc_with_ollama(code_snippet, model, max_chars=800):
     """
     Sends a function to the Ollama API and returns a generated docstring.
+    Structured prompting technique
     """
-    prompt = f"Generate a concise and helpful documentation string for the following Python functions. Above your documentation, provide an all caps label stating where the documentation starts, name it GENERATED DOCUMENTATION. Provide the amount of time taken to complete the task at the end of the file:\n\n{code_snippet}"
-
+    prompt = (f"You are an expert Python developer and technical writer. Your task is to write concise and detailed Python "
+              f"docstring for the following function. Follow google-style format.\n{code_snippet} ")
     try:
         response = requests.post(
             "http://localhost:11434/api/generate",
@@ -80,15 +91,25 @@ if __name__ == "__main__":
     print("Available models:\n")
     print("llama3.2:1b, qwen2.5-coder:0.5b, deepseek-r1:1.5b")
 
-    model_used = input("\nEnter model name: ")
-    dataset_records = []
 
+    model_used = input("\nEnter model name: ")
+    type_prompts = PromptTechniques(model_used)
+    dataset_records = []
+    zero_shot_records = []
+    few_shot_records = []
+    chain_records = []
+    structured_records = []
     file_path = "raw_code/fibonacci.py"
     print(f"\nProccessing {file_path}")
     functions = extract_functions_from_file(file_path)
     for i, func in enumerate(functions):
         print(f"\nFunction {i + 1}:\n{func}\n{'=' * 40}")
 
+        #model response called here
+        # zero shot task
+        task = f"You are an expert Python developer and technical writer. Your task is to write concise and detailed Python docstring for the following function. Follow google-style format: \n{func}"
+        zero_doc = type_prompts.zero_shot_prompting(task)
+        few_doc = type_prompts.few_shot_prompting(task)
         doc = generate_doc_with_ollama(func, model_used)
         print(f"\n Generated Doc:\n{doc}\n{'-' * 40}")
 
@@ -105,5 +126,5 @@ if __name__ == "__main__":
             "generated_doc": doc
         })
 
-    save_to_csv("output/generated_docs_fibonacci.csv", dataset_records)
-    print("\n Saved dataset to output/generated_docs_fibonacci.csv")
+    save_to_csv("output/generated_docs_.csv", dataset_records)
+    print("\n Saved dataset to output/generated_docs_.csv")
