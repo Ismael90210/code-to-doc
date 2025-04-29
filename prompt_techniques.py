@@ -47,21 +47,26 @@ class PromptTechniques:
         """
         return self.generate_with_ollama(prompt)
 
-    def chain_of_thought_prompting(self, problem):
+    def chain_of_thought_prompting(self, problem, code_snippet):
         prompt = f"""
         Problem: {problem}
-        Let's think through this step by step to find the answer:
+        Let's think through this step by step to find the answer for the following function {code_snippet}:
         """
         return self.generate_with_ollama(prompt)
 
     def structured_prompting(self, code_snippet):
-        prompt = f"""
-        You are an expert Python developer and technical writer. Your task is to write a professional, concise, and Google-style docstring for the following function:
+        prompt = f"""You are a senior Python developer and technical writer.
 
+        Your task is to generate a complete, professional docstring for the following Python function.
+        Use Google-style formatting. Include:
+    
+        - A one-line summary of what the function does
+        - Args section: each argument, its type, and purpose
+        - Returns section: return value, type, and purpose
+        - Raises section if applicable
+        - Include an example if the function is non-obvious
+    
+        Function to document:
         ```python
-        {code_snippet}
-        ```
-
-        GENERATED DOCUMENTATION:
-        """
+        {code_snippet}"""
         return self.generate_with_ollama(prompt)
