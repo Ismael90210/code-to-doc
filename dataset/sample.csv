@@ -1,0 +1,256 @@
+Unnamed: 0,repository_name,func_path_in_repository,func_name,whole_func_string,language,func_code_string,func_code_tokens,func_documentation_string,func_documentation_tokens,split_name,func_code_url
+0,gem/oq-engine,openquake/calculators/export/hazard.py,export_ruptures_csv,"def export_ruptures_csv(ekey, dstore):
+    """"""
+    :param ekey: export key, i.e. a pair (datastore key, fmt)
+    :param dstore: datastore object
+    """"""
+    oq = dstore['oqparam']
+    if 'scenario' in oq.calculation_mode:
+        return []
+    dest = dstore.export_path('ruptures.csv')
+    header = ('rupid multiplicity mag centroid_lon centroid_lat '
+              'centroid_depth trt strike dip rake boundary').split()
+    rows = []
+    for rgetter in gen_rupture_getters(dstore):
+        rups = rgetter.get_ruptures()
+        rup_data = calc.RuptureData(rgetter.trt, rgetter.rlzs_by_gsim)
+        for r in rup_data.to_array(rups):
+            rows.append(
+                (r['rup_id'], r['multiplicity'], r['mag'],
+                 r['lon'], r['lat'], r['depth'],
+                 rgetter.trt, r['strike'], r['dip'], r['rake'],
+                 r['boundary']))
+    rows.sort()  # by rupture serial
+    comment = 'investigation_time=%s, ses_per_logic_tree_path=%s' % (
+        oq.investigation_time, oq.ses_per_logic_tree_path)
+    writers.write_csv(dest, rows, header=header, sep='\t', comment=comment)
+    return [dest]",python,"def export_ruptures_csv(ekey, dstore):
+    """"""
+    :param ekey: export key, i.e. a pair (datastore key, fmt)
+    :param dstore: datastore object
+    """"""
+    oq = dstore['oqparam']
+    if 'scenario' in oq.calculation_mode:
+        return []
+    dest = dstore.export_path('ruptures.csv')
+    header = ('rupid multiplicity mag centroid_lon centroid_lat '
+              'centroid_depth trt strike dip rake boundary').split()
+    rows = []
+    for rgetter in gen_rupture_getters(dstore):
+        rups = rgetter.get_ruptures()
+        rup_data = calc.RuptureData(rgetter.trt, rgetter.rlzs_by_gsim)
+        for r in rup_data.to_array(rups):
+            rows.append(
+                (r['rup_id'], r['multiplicity'], r['mag'],
+                 r['lon'], r['lat'], r['depth'],
+                 rgetter.trt, r['strike'], r['dip'], r['rake'],
+                 r['boundary']))
+    rows.sort()  # by rupture serial
+    comment = 'investigation_time=%s, ses_per_logic_tree_path=%s' % (
+        oq.investigation_time, oq.ses_per_logic_tree_path)
+    writers.write_csv(dest, rows, header=header, sep='\t', comment=comment)
+    return [dest]","['def' 'export_ruptures_csv' '(' 'ekey' ',' 'dstore' ')' ':' 'oq' '='
+ 'dstore' '[' ""'oqparam'"" ']' 'if' ""'scenario'"" 'in' 'oq' '.'
+ 'calculation_mode' ':' 'return' '[' ']' 'dest' '=' 'dstore' '.'
+ 'export_path' '(' ""'ruptures.csv'"" ')' 'header' '=' '('
+ ""'rupid multiplicity mag centroid_lon centroid_lat '""
+ ""'centroid_depth trt strike dip rake boundary'"" ')' '.' 'split' '(' ')'
+ 'rows' '=' '[' ']' 'for' 'rgetter' 'in' 'gen_rupture_getters' '('
+ 'dstore' ')' ':' 'rups' '=' 'rgetter' '.' 'get_ruptures' '(' ')'
+ 'rup_data' '=' 'calc' '.' 'RuptureData' '(' 'rgetter' '.' 'trt' ','
+ 'rgetter' '.' 'rlzs_by_gsim' ')' 'for' 'r' 'in' 'rup_data' '.' 'to_array'
+ '(' 'rups' ')' ':' 'rows' '.' 'append' '(' '(' 'r' '[' ""'rup_id'"" ']' ','
+ 'r' '[' ""'multiplicity'"" ']' ',' 'r' '[' ""'mag'"" ']' ',' 'r' '[' ""'lon'""
+ ']' ',' 'r' '[' ""'lat'"" ']' ',' 'r' '[' ""'depth'"" ']' ',' 'rgetter' '.'
+ 'trt' ',' 'r' '[' ""'strike'"" ']' ',' 'r' '[' ""'dip'"" ']' ',' 'r' '['
+ ""'rake'"" ']' ',' 'r' '[' ""'boundary'"" ']' ')' ')' 'rows' '.' 'sort' '('
+ ')' '# by rupture serial' 'comment' '='
+ ""'investigation_time=%s, ses_per_logic_tree_path=%s'"" '%' '(' 'oq' '.'
+ 'investigation_time' ',' 'oq' '.' 'ses_per_logic_tree_path' ')' 'writers'
+ '.' 'write_csv' '(' 'dest' ',' 'rows' ',' 'header' '=' 'header' ',' 'sep'
+ '=' ""'\\t'"" ',' 'comment' '=' 'comment' ')' 'return' '[' 'dest' ']']",":param ekey: export key, i.e. a pair (datastore key, fmt)
+    :param dstore: datastore object","[':' 'param' 'ekey' ':' 'export' 'key' 'i' '.' 'e' '.' 'a' 'pair' '('
+ 'datastore' 'key' 'fmt' ')' ':' 'param' 'dstore' ':' 'datastore' 'object']",train,https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L81-L106
+1,gem/oq-engine,openquake/calculators/export/hazard.py,export_hmaps_csv,"def export_hmaps_csv(key, dest, sitemesh, array, comment):
+    """"""
+    Export the hazard maps of the given realization into CSV.
+
+    :param key: output_type and export_type
+    :param dest: name of the exported file
+    :param sitemesh: site collection
+    :param array: a composite array of dtype hmap_dt
+    :param comment: comment to use as header of the exported CSV file
+    """"""
+    curves = util.compose_arrays(sitemesh, array)
+    writers.write_csv(dest, curves, comment=comment)
+    return [dest]",python,"def export_hmaps_csv(key, dest, sitemesh, array, comment):
+    """"""
+    Export the hazard maps of the given realization into CSV.
+
+    :param key: output_type and export_type
+    :param dest: name of the exported file
+    :param sitemesh: site collection
+    :param array: a composite array of dtype hmap_dt
+    :param comment: comment to use as header of the exported CSV file
+    """"""
+    curves = util.compose_arrays(sitemesh, array)
+    writers.write_csv(dest, curves, comment=comment)
+    return [dest]","['def' 'export_hmaps_csv' '(' 'key' ',' 'dest' ',' 'sitemesh' ',' 'array'
+ ',' 'comment' ')' ':' 'curves' '=' 'util' '.' 'compose_arrays' '('
+ 'sitemesh' ',' 'array' ')' 'writers' '.' 'write_csv' '(' 'dest' ','
+ 'curves' ',' 'comment' '=' 'comment' ')' 'return' '[' 'dest' ']']","Export the hazard maps of the given realization into CSV.
+
+    :param key: output_type and export_type
+    :param dest: name of the exported file
+    :param sitemesh: site collection
+    :param array: a composite array of dtype hmap_dt
+    :param comment: comment to use as header of the exported CSV file","['Export' 'the' 'hazard' 'maps' 'of' 'the' 'given' 'realization' 'into'
+ 'CSV' '.']",train,https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L223-L235
+2,gem/oq-engine,openquake/calculators/export/hazard.py,add_imt,"def add_imt(fname, imt):
+    """"""
+    >>> add_imt('/path/to/hcurve_23.csv', 'SA(0.1)')
+    '/path/to/hcurve-SA(0.1)_23.csv'
+    """"""
+    name = os.path.basename(fname)
+    newname = re.sub(r'(_\d+\.)', '-%s\\1' % imt, name)
+    return os.path.join(os.path.dirname(fname), newname)",python,"def add_imt(fname, imt):
+    """"""
+    >>> add_imt('/path/to/hcurve_23.csv', 'SA(0.1)')
+    '/path/to/hcurve-SA(0.1)_23.csv'
+    """"""
+    name = os.path.basename(fname)
+    newname = re.sub(r'(_\d+\.)', '-%s\\1' % imt, name)
+    return os.path.join(os.path.dirname(fname), newname)","['def' 'add_imt' '(' 'fname' ',' 'imt' ')' ':' 'name' '=' 'os' '.' 'path'
+ '.' 'basename' '(' 'fname' ')' 'newname' '=' 're' '.' 'sub' '('
+ ""r'(_\\d+\\.)'"" ',' ""'-%s\\\\1'"" '%' 'imt' ',' 'name' ')' 'return' 'os'
+ '.' 'path' '.' 'join' '(' 'os' '.' 'path' '.' 'dirname' '(' 'fname' ')'
+ ',' 'newname' ')']",">>> add_imt('/path/to/hcurve_23.csv', 'SA(0.1)')
+    '/path/to/hcurve-SA(0.1)_23.csv'","['>>>' 'add_imt' '(' '/' 'path' '/' 'to' '/' 'hcurve_23' '.' 'csv' 'SA'
+ '(' '0' '.' '1' ')' ')' '/' 'path' '/' 'to' '/' 'hcurve' '-' 'SA' '(' '0'
+ '.' '1' ')' '_23' '.' 'csv']",train,https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L238-L245
+3,gem/oq-engine,openquake/calculators/export/hazard.py,export_hcurves_by_imt_csv,"def export_hcurves_by_imt_csv(
+        key, kind, rlzs_assoc, fname, sitecol, array, oq, checksum):
+    """"""
+    Export the curves of the given realization into CSV.
+
+    :param key: output_type and export_type
+    :param kind: a string with the kind of output (realization or statistics)
+    :param rlzs_assoc: a :class:`openquake.commonlib.source.RlzsAssoc` instance
+    :param fname: name of the exported file
+    :param sitecol: site collection
+    :param array: an array of shape (N, L) and dtype numpy.float32
+    :param oq: job.ini parameters
+    """"""
+    nsites = len(sitecol)
+    fnames = []
+    for imt, imls in oq.imtls.items():
+        slc = oq.imtls(imt)
+        dest = add_imt(fname, imt)
+        lst = [('lon', F32), ('lat', F32), ('depth', F32)]
+        for iml in imls:
+            lst.append(('poe-%s' % iml, F32))
+        hcurves = numpy.zeros(nsites, lst)
+        for sid, lon, lat, dep in zip(
+                range(nsites), sitecol.lons, sitecol.lats, sitecol.depths):
+            hcurves[sid] = (lon, lat, dep) + tuple(array[sid, slc])
+        fnames.append(writers.write_csv(dest, hcurves, comment=_comment(
+            rlzs_assoc, kind, oq.investigation_time) + (
+                ', imt=""%s"", checksum=%d' % (imt, checksum)
+            ), header=[name for (name, dt) in lst]))
+    return fnames",python,"def export_hcurves_by_imt_csv(
+        key, kind, rlzs_assoc, fname, sitecol, array, oq, checksum):
+    """"""
+    Export the curves of the given realization into CSV.
+
+    :param key: output_type and export_type
+    :param kind: a string with the kind of output (realization or statistics)
+    :param rlzs_assoc: a :class:`openquake.commonlib.source.RlzsAssoc` instance
+    :param fname: name of the exported file
+    :param sitecol: site collection
+    :param array: an array of shape (N, L) and dtype numpy.float32
+    :param oq: job.ini parameters
+    """"""
+    nsites = len(sitecol)
+    fnames = []
+    for imt, imls in oq.imtls.items():
+        slc = oq.imtls(imt)
+        dest = add_imt(fname, imt)
+        lst = [('lon', F32), ('lat', F32), ('depth', F32)]
+        for iml in imls:
+            lst.append(('poe-%s' % iml, F32))
+        hcurves = numpy.zeros(nsites, lst)
+        for sid, lon, lat, dep in zip(
+                range(nsites), sitecol.lons, sitecol.lats, sitecol.depths):
+            hcurves[sid] = (lon, lat, dep) + tuple(array[sid, slc])
+        fnames.append(writers.write_csv(dest, hcurves, comment=_comment(
+            rlzs_assoc, kind, oq.investigation_time) + (
+                ', imt=""%s"", checksum=%d' % (imt, checksum)
+            ), header=[name for (name, dt) in lst]))
+    return fnames","['def' 'export_hcurves_by_imt_csv' '(' 'key' ',' 'kind' ',' 'rlzs_assoc'
+ ',' 'fname' ',' 'sitecol' ',' 'array' ',' 'oq' ',' 'checksum' ')' ':'
+ 'nsites' '=' 'len' '(' 'sitecol' ')' 'fnames' '=' '[' ']' 'for' 'imt' ','
+ 'imls' 'in' 'oq' '.' 'imtls' '.' 'items' '(' ')' ':' 'slc' '=' 'oq' '.'
+ 'imtls' '(' 'imt' ')' 'dest' '=' 'add_imt' '(' 'fname' ',' 'imt' ')'
+ 'lst' '=' '[' '(' ""'lon'"" ',' 'F32' ')' ',' '(' ""'lat'"" ',' 'F32' ')' ','
+ '(' ""'depth'"" ',' 'F32' ')' ']' 'for' 'iml' 'in' 'imls' ':' 'lst' '.'
+ 'append' '(' '(' ""'poe-%s'"" '%' 'iml' ',' 'F32' ')' ')' 'hcurves' '='
+ 'numpy' '.' 'zeros' '(' 'nsites' ',' 'lst' ')' 'for' 'sid' ',' 'lon' ','
+ 'lat' ',' 'dep' 'in' 'zip' '(' 'range' '(' 'nsites' ')' ',' 'sitecol' '.'
+ 'lons' ',' 'sitecol' '.' 'lats' ',' 'sitecol' '.' 'depths' ')' ':'
+ 'hcurves' '[' 'sid' ']' '=' '(' 'lon' ',' 'lat' ',' 'dep' ')' '+' 'tuple'
+ '(' 'array' '[' 'sid' ',' 'slc' ']' ')' 'fnames' '.' 'append' '('
+ 'writers' '.' 'write_csv' '(' 'dest' ',' 'hcurves' ',' 'comment' '='
+ '_comment' '(' 'rlzs_assoc' ',' 'kind' ',' 'oq' '.' 'investigation_time'
+ ')' '+' '(' '\', imt=""%s"", checksum=%d\'' '%' '(' 'imt' ',' 'checksum'
+ ')' ')' ',' 'header' '=' '[' 'name' 'for' '(' 'name' ',' 'dt' ')' 'in'
+ 'lst' ']' ')' ')' 'return' 'fnames']","Export the curves of the given realization into CSV.
+
+    :param key: output_type and export_type
+    :param kind: a string with the kind of output (realization or statistics)
+    :param rlzs_assoc: a :class:`openquake.commonlib.source.RlzsAssoc` instance
+    :param fname: name of the exported file
+    :param sitecol: site collection
+    :param array: an array of shape (N, L) and dtype numpy.float32
+    :param oq: job.ini parameters",['Export' 'the' 'curves' 'of' 'the' 'given' 'realization' 'into' 'CSV' '.'],train,https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L248-L277
+4,gem/oq-engine,openquake/calculators/export/hazard.py,hazard_curve_name,"def hazard_curve_name(dstore, ekey, kind, rlzs_assoc):
+    """"""
+    :param calc_id: the calculation ID
+    :param ekey: the export key
+    :param kind: the kind of key
+    :param rlzs_assoc: a RlzsAssoc instance
+    """"""
+    key, fmt = ekey
+    prefix = {'hcurves': 'hazard_curve', 'hmaps': 'hazard_map',
+              'uhs': 'hazard_uhs'}[key]
+    if kind.startswith('quantile-'):  # strip the 7 characters 'hazard_'
+        fname = dstore.build_fname('quantile_' + prefix[7:], kind[9:], fmt)
+    else:
+        fname = dstore.build_fname(prefix, kind, fmt)
+    return fname",python,"def hazard_curve_name(dstore, ekey, kind, rlzs_assoc):
+    """"""
+    :param calc_id: the calculation ID
+    :param ekey: the export key
+    :param kind: the kind of key
+    :param rlzs_assoc: a RlzsAssoc instance
+    """"""
+    key, fmt = ekey
+    prefix = {'hcurves': 'hazard_curve', 'hmaps': 'hazard_map',
+              'uhs': 'hazard_uhs'}[key]
+    if kind.startswith('quantile-'):  # strip the 7 characters 'hazard_'
+        fname = dstore.build_fname('quantile_' + prefix[7:], kind[9:], fmt)
+    else:
+        fname = dstore.build_fname(prefix, kind, fmt)
+    return fname","['def' 'hazard_curve_name' '(' 'dstore' ',' 'ekey' ',' 'kind' ','
+ 'rlzs_assoc' ')' ':' 'key' ',' 'fmt' '=' 'ekey' 'prefix' '=' '{'
+ ""'hcurves'"" ':' ""'hazard_curve'"" ',' ""'hmaps'"" ':' ""'hazard_map'"" ','
+ ""'uhs'"" ':' ""'hazard_uhs'"" '}' '[' 'key' ']' 'if' 'kind' '.' 'startswith'
+ '(' ""'quantile-'"" ')' ':' ""# strip the 7 characters 'hazard_'"" 'fname'
+ '=' 'dstore' '.' 'build_fname' '(' ""'quantile_'"" '+' 'prefix' '[' '7' ':'
+ ']' ',' 'kind' '[' '9' ':' ']' ',' 'fmt' ')' 'else' ':' 'fname' '='
+ 'dstore' '.' 'build_fname' '(' 'prefix' ',' 'kind' ',' 'fmt' ')' 'return'
+ 'fname']",":param calc_id: the calculation ID
+    :param ekey: the export key
+    :param kind: the kind of key
+    :param rlzs_assoc: a RlzsAssoc instance","[':' 'param' 'calc_id' ':' 'the' 'calculation' 'ID' ':' 'param' 'ekey' ':'
+ 'the' 'export' 'key' ':' 'param' 'kind' ':' 'the' 'kind' 'of' 'key' ':'
+ 'param' 'rlzs_assoc' ':' 'a' 'RlzsAssoc' 'instance']",train,https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L280-L294
