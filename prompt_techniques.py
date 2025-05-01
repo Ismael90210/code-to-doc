@@ -53,6 +53,7 @@ class PromptTechniques:
         return responses
 
 
+
     def few_shot_prompting(self, task_description, examples):
         examples_text = "examples"
         for example in examples:
