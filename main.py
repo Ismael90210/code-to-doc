@@ -108,7 +108,7 @@ if __name__ == "__main__":
         "2": few_shot_records,
         "3": chain_records,
         "4": structured_records,
-        "5": few_shot_records,
+        "5": one_shot_records,
     }
     record = records_map[num]
     file_path = "raw_code/fibonacci.py"

@@ -38,14 +38,20 @@ class PromptTechniques:
         """
         One-shot prompting: include a single example before the task.
         """
-        prompt = (
-            f"Here is one example:\n"
-            f"Function:\n{example['input']}\n"
-            f"Docstring:\n{example['output']}\n\n"
-            f"Now, write a docstring for the following function:\n{task_description}\n"
-            f"Output:"
-        )
-        return self.generate_with_ollama(prompt)
+        prompt_templates = [
+            "Here is one example:\nFunction:\n{input}\nDocstring:\n{output}\n\nNow, write a docstring for the following function:\n{task}\nOutput:",
+            "Below is an example of documenting a Python function:\nFunction:\n{input}\nDocstring:\n{output}\n\nPlease write a Google-style docstring for this function:\n{task}\nDocstring:",
+            "Use the following as a guide for docstrings:\nFunction:\n{input}\nDocstring:\n{output}\n\nNow document the next function in the same style:\n{task}\nDocumentation:",
+            "Sample documentation:\nFunction:\n{input}\n\"\"\"{output}\"\"\"\n\nGenerate a similar docstring for:\n{task}\n\"\"\"",
+            "Example of function and docstring:\nFunction:\n{input}\nDocstring:\n{output}\n\nUsing that example, write a docstring for:\n{task}\nDocstring:",
+            "Here's an illustration:\nFunction:\n{input}\nDocstring:\n{output}\n\nNow create a Google-style docstring for the function below:\n{task}\nDocstring:"
+        ]
+        responses = []
+        for tmpl in prompt_templates:
+            prompt = tmpl.format(input=example['input'], output=example['output'], task=task_description)
+            responses.append(self.generate_with_ollama(prompt))
+        return responses
+
 
     def few_shot_prompting(self, task_description, examples):
         examples_text = "examples"
