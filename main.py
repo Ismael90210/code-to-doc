@@ -47,17 +47,20 @@ if __name__ == "__main__":
     print("llama3.2:1b, qwen2.5-coder:0.5b, deepseek-r1:1.5b")
     model_used = input("\nEnter model name: ")
     print("Available prompts:\n")
-    num = input("Choose(1, 2, 3, or 4): zero_shot_records, few_shot_records, chain_records, structured_records:\n")
+    num = input("Choose(1, 2, 3, 4, or 5): zero_shot_records, few_shot_records, chain_records, structured_records, one_shot_records :\n")
     type_prompts = PromptTechniques(model_used)
     zero_shot_records = []
     few_shot_records = []
     chain_records = []
     structured_records = []
+    one_shot_records = []
+
     records_map = {
         "1": zero_shot_records,
         "2": few_shot_records,
         "3": chain_records,
         "4": structured_records,
+        "5": few_shot_records,
     }
     record = records_map[num]
     start_time = time.time()
@@ -83,7 +86,26 @@ if __name__ == "__main__":
                 chain_doc = type_prompts.chain_of_thought_prompting(problem, func)
             case "4":
                 structured_doc = type_prompts.structured_prompting(func)
-        #append generated docstring to new csv file
+
+            case "5":
+                one_doc = type_prompts.one_shot_prompting(task,examples)
+
+        #doc = generate_doc_with_ollama(func, model_used)
+        #print(f"\n Generated Doc:\n{doc}\n{'-' * 40}")
+
+        try:
+            func_name = func.strip().split('\n')[0].split('def')[1].split('(')[0].strip()
+        except:
+            func_name = f"function_{i + 1}"
+
+        # dataset_records.append({
+        #     "filename": os.path.basename(file_path),
+        #     "function_name": func_name,
+        #     "model": model_used,
+        #     "input_code": func,
+        #     "generated_doc": doc
+        # })
+        #Output
         match num:
             case "1":
                 zero_shot_records.append({
@@ -133,6 +155,16 @@ if __name__ == "__main__":
                     "prompt": record,
                     "generated_doc": structured_doc
                 })
+            case "5":
+                one_shot_records.append({
+                    "filename": os.path.basename(file_path),
+                    "function_name": func_name,
+                    "model": model_used,
+                    "prompt": record,
+                    "input_code": func,
+                    "generated_doc": one_doc
+                })
+
 
     save_to_csv("output/generated_docs_.csv", record)
     end_time = time.time()
