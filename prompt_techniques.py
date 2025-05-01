@@ -47,6 +47,7 @@ class PromptTechniques:
         )
         return self.generate_with_ollama(prompt)
 
+
     def few_shot_prompting(self, task_description, examples):
         examples_text = "examples"
         for example in examples:

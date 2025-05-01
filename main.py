@@ -103,6 +103,7 @@ if __name__ == "__main__":
     chain_records = []
     structured_records = []
     one_shot_records = []
+
     records_map = {
         "1": zero_shot_records,
         "2": few_shot_records,
@@ -135,6 +136,7 @@ if __name__ == "__main__":
                 structured_doc = type_prompts.structured_prompting(func)
             case "5":
                 one_doc = type_prompts.one_shot_prompting(task,examples)
+
         #doc = generate_doc_with_ollama(func, model_used)
         #print(f"\n Generated Doc:\n{doc}\n{'-' * 40}")
 
@@ -197,6 +199,7 @@ if __name__ == "__main__":
                     "input_code": func,
                     "generated_doc": one_doc
                 })
+
 
     # save_to_csv("output/generated_docs_.csv", dataset_records)
     # save_to_csv("output/generated_docs_.csv", zero_shot_records)
