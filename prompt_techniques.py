@@ -34,6 +34,20 @@ class PromptTechniques:
         prompt = task_description
         return self.generate_with_ollama(prompt)
 
+    def one_shot_prompting(self, task_description, example):
+        """
+        One-shot prompting: include a single example before the task.
+        """
+        prompt = (
+            f"Here is one example:\n"
+            f"Function:\n{example['input']}\n"
+            f"Docstring:\n{example['output']}\n\n"
+            f"Now, write a docstring for the following function:\n{task_description}\n"
+            f"Output:"
+        )
+        return self.generate_with_ollama(prompt)
+
+
     def few_shot_prompting(self, task_description, examples):
         examples_text = "examples"
         for example in examples:
