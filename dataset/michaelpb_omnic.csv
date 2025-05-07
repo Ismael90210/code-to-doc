@@ -1,0 +1,2405 @@
+repository_name,func_path_in_repository,func_name,whole_func_string,language,func_code_string,func_code_tokens,func_documentation_string,func_documentation_tokens,split_name,func_code_url
+michaelpb/omnic,omnic/config/utils.py,use_settings,"def use_settings(**kwargs):
+    '''
+    Context manager to temporarily override settings
+    '''
+    from omnic import singletons
+    singletons.settings.use_settings_dict(kwargs)
+    yield
+    singletons.settings.use_previous_settings()",python,"def use_settings(**kwargs):
+    '''
+    Context manager to temporarily override settings
+    '''
+    from omnic import singletons
+    singletons.settings.use_settings_dict(kwargs)
+    yield
+    singletons.settings.use_previous_settings()","['def' 'use_settings' '(' '*' '*' 'kwargs' ')' ':' 'from' 'omnic' 'import'
+ 'singletons' 'singletons' '.' 'settings' '.' 'use_settings_dict' '('
+ 'kwargs' ')' 'yield' 'singletons' '.' 'settings' '.'
+ 'use_previous_settings' '(' ')']",Context manager to temporarily override settings,['Context' 'manager' 'to' 'temporarily' 'override' 'settings'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/config/utils.py#L5-L12
+michaelpb/omnic,omnic/types/resourceurl.py,ResourceURL.parse_string,"def parse_string(s):
+        '''
+        Parses a foreign resource URL into the URL string itself and any
+        relevant args and kwargs
+        '''
+        matched_obj = SPLIT_URL_RE.match(s)
+        if not matched_obj:
+            raise URLParseException('Invalid Resource URL: ""%s""' % s)
+
+        url_string, arguments_string = matched_obj.groups()
+        args_as_strings = URL_ARGUMENTS_RE.findall(arguments_string)
+
+        # Determine args and kwargs
+        args = []
+        kwargs = {}
+        for arg_string in args_as_strings:
+            kwarg_match = ARG_RE.match(arg_string)
+            if kwarg_match:
+                key, value = kwarg_match.groups()
+                kwargs[key.strip()] = value.strip()
+            else:
+                args.append(arg_string.strip())
+
+        # Default to HTTP if url_string has no URL
+        if not SCHEME_RE.match(url_string):
+            url_string = '%s://%s' % (DEFAULT_SCHEME, url_string)
+
+        return url_string.strip(), args, kwargs",python,"def parse_string(s):
+        '''
+        Parses a foreign resource URL into the URL string itself and any
+        relevant args and kwargs
+        '''
+        matched_obj = SPLIT_URL_RE.match(s)
+        if not matched_obj:
+            raise URLParseException('Invalid Resource URL: ""%s""' % s)
+
+        url_string, arguments_string = matched_obj.groups()
+        args_as_strings = URL_ARGUMENTS_RE.findall(arguments_string)
+
+        # Determine args and kwargs
+        args = []
+        kwargs = {}
+        for arg_string in args_as_strings:
+            kwarg_match = ARG_RE.match(arg_string)
+            if kwarg_match:
+                key, value = kwarg_match.groups()
+                kwargs[key.strip()] = value.strip()
+            else:
+                args.append(arg_string.strip())
+
+        # Default to HTTP if url_string has no URL
+        if not SCHEME_RE.match(url_string):
+            url_string = '%s://%s' % (DEFAULT_SCHEME, url_string)
+
+        return url_string.strip(), args, kwargs","['def' 'parse_string' '(' 's' ')' ':' 'matched_obj' '=' 'SPLIT_URL_RE' '.'
+ 'match' '(' 's' ')' 'if' 'not' 'matched_obj' ':' 'raise'
+ 'URLParseException' '(' '\'Invalid Resource URL: ""%s""\'' '%' 's' ')'
+ 'url_string' ',' 'arguments_string' '=' 'matched_obj' '.' 'groups' '('
+ ')' 'args_as_strings' '=' 'URL_ARGUMENTS_RE' '.' 'findall' '('
+ 'arguments_string' ')' '# Determine args and kwargs' 'args' '=' '[' ']'
+ 'kwargs' '=' '{' '}' 'for' 'arg_string' 'in' 'args_as_strings' ':'
+ 'kwarg_match' '=' 'ARG_RE' '.' 'match' '(' 'arg_string' ')' 'if'
+ 'kwarg_match' ':' 'key' ',' 'value' '=' 'kwarg_match' '.' 'groups' '('
+ ')' 'kwargs' '[' 'key' '.' 'strip' '(' ')' ']' '=' 'value' '.' 'strip'
+ '(' ')' 'else' ':' 'args' '.' 'append' '(' 'arg_string' '.' 'strip' '('
+ ')' ')' '# Default to HTTP if url_string has no URL' 'if' 'not'
+ 'SCHEME_RE' '.' 'match' '(' 'url_string' ')' ':' 'url_string' '='
+ ""'%s://%s'"" '%' '(' 'DEFAULT_SCHEME' ',' 'url_string' ')' 'return'
+ 'url_string' '.' 'strip' '(' ')' ',' 'args' ',' 'kwargs']","Parses a foreign resource URL into the URL string itself and any
+        relevant args and kwargs","['Parses' 'a' 'foreign' 'resource' 'URL' 'into' 'the' 'URL' 'string'
+ 'itself' 'and' 'any' 'relevant' 'args' 'and' 'kwargs']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/types/resourceurl.py#L55-L82
+michaelpb/omnic,omnic/conversion/utils.py,convert_endpoint,"async def convert_endpoint(url_string, ts, is_just_checking):
+    '''
+    Main logic for HTTP endpoint.
+    '''
+    response = singletons.server.response
+
+    # Prep ForeignResource and ensure does not validate security settings
+    singletons.settings
+    foreign_res = ForeignResource(url_string)
+
+    target_ts = TypeString(ts)
+    target_resource = TypedResource(url_string, target_ts)
+
+    # Send back cache if it exists
+    if target_resource.cache_exists():
+        if is_just_checking:
+            return _just_checking_response(True, target_resource)
+        return await response.file(target_resource.cache_path, headers={
+            'Content-Type': target_ts.mimetype,
+        })
+
+    # Check if already downloaded. If not, queue up download.
+    if not foreign_res.cache_exists():
+        singletons.workers.enqueue_download(foreign_res)
+
+    # Queue up a single function that will in turn queue up conversion
+    # process
+    singletons.workers.enqueue_sync(
+        enqueue_conversion_path,
+        url_string,
+        str(target_ts),
+        singletons.workers.enqueue_convert
+    )
+
+    if is_just_checking:
+        return _just_checking_response(False, target_resource)
+
+    # Respond with placeholder
+    return singletons.placeholders.stream_response(target_ts, response)",python,"async def convert_endpoint(url_string, ts, is_just_checking):
+    '''
+    Main logic for HTTP endpoint.
+    '''
+    response = singletons.server.response
+
+    # Prep ForeignResource and ensure does not validate security settings
+    singletons.settings
+    foreign_res = ForeignResource(url_string)
+
+    target_ts = TypeString(ts)
+    target_resource = TypedResource(url_string, target_ts)
+
+    # Send back cache if it exists
+    if target_resource.cache_exists():
+        if is_just_checking:
+            return _just_checking_response(True, target_resource)
+        return await response.file(target_resource.cache_path, headers={
+            'Content-Type': target_ts.mimetype,
+        })
+
+    # Check if already downloaded. If not, queue up download.
+    if not foreign_res.cache_exists():
+        singletons.workers.enqueue_download(foreign_res)
+
+    # Queue up a single function that will in turn queue up conversion
+    # process
+    singletons.workers.enqueue_sync(
+        enqueue_conversion_path,
+        url_string,
+        str(target_ts),
+        singletons.workers.enqueue_convert
+    )
+
+    if is_just_checking:
+        return _just_checking_response(False, target_resource)
+
+    # Respond with placeholder
+    return singletons.placeholders.stream_response(target_ts, response)","['async' 'def' 'convert_endpoint' '(' 'url_string' ',' 'ts' ','
+ 'is_just_checking' ')' ':' 'response' '=' 'singletons' '.' 'server' '.'
+ 'response'
+ '# Prep ForeignResource and ensure does not validate security settings'
+ 'singletons' '.' 'settings' 'foreign_res' '=' 'ForeignResource' '('
+ 'url_string' ')' 'target_ts' '=' 'TypeString' '(' 'ts' ')'
+ 'target_resource' '=' 'TypedResource' '(' 'url_string' ',' 'target_ts'
+ ')' '# Send back cache if it exists' 'if' 'target_resource' '.'
+ 'cache_exists' '(' ')' ':' 'if' 'is_just_checking' ':' 'return'
+ '_just_checking_response' '(' 'True' ',' 'target_resource' ')' 'return'
+ 'await' 'response' '.' 'file' '(' 'target_resource' '.' 'cache_path' ','
+ 'headers' '=' '{' ""'Content-Type'"" ':' 'target_ts' '.' 'mimetype' ',' '}'
+ ')' '# Check if already downloaded. If not, queue up download.' 'if'
+ 'not' 'foreign_res' '.' 'cache_exists' '(' ')' ':' 'singletons' '.'
+ 'workers' '.' 'enqueue_download' '(' 'foreign_res' ')'
+ '# Queue up a single function that will in turn queue up conversion'
+ '# process' 'singletons' '.' 'workers' '.' 'enqueue_sync' '('
+ 'enqueue_conversion_path' ',' 'url_string' ',' 'str' '(' 'target_ts' ')'
+ ',' 'singletons' '.' 'workers' '.' 'enqueue_convert' ')' 'if'
+ 'is_just_checking' ':' 'return' '_just_checking_response' '(' 'False' ','
+ 'target_resource' ')' '# Respond with placeholder' 'return' 'singletons'
+ '.' 'placeholders' '.' 'stream_response' '(' 'target_ts' ',' 'response'
+ ')']",Main logic for HTTP endpoint.,['Main' 'logic' 'for' 'HTTP' 'endpoint' '.'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/conversion/utils.py#L15-L53
+michaelpb/omnic,omnic/conversion/utils.py,apply_command_list_template,"def apply_command_list_template(command_list, in_path, out_path, args):
+    '''
+    Perform necessary substitutions on a command list to create a CLI-ready
+    list to launch a conversion or download process via system binary.
+    '''
+    replacements = {
+        '$IN': in_path,
+        '$OUT': out_path,
+    }
+
+    # Add in positional arguments ($0, $1, etc)
+    for i, arg in enumerate(args):
+        replacements['$' + str(i)] = arg
+
+    results = [replacements.get(arg, arg) for arg in command_list]
+
+    # Returns list of truthy replaced arguments in command
+    return [item for item in results if item]",python,"def apply_command_list_template(command_list, in_path, out_path, args):
+    '''
+    Perform necessary substitutions on a command list to create a CLI-ready
+    list to launch a conversion or download process via system binary.
+    '''
+    replacements = {
+        '$IN': in_path,
+        '$OUT': out_path,
+    }
+
+    # Add in positional arguments ($0, $1, etc)
+    for i, arg in enumerate(args):
+        replacements['$' + str(i)] = arg
+
+    results = [replacements.get(arg, arg) for arg in command_list]
+
+    # Returns list of truthy replaced arguments in command
+    return [item for item in results if item]","['def' 'apply_command_list_template' '(' 'command_list' ',' 'in_path' ','
+ 'out_path' ',' 'args' ')' ':' 'replacements' '=' '{' ""'$IN'"" ':'
+ 'in_path' ',' ""'$OUT'"" ':' 'out_path' ',' '}'
+ '# Add in positional arguments ($0, $1, etc)' 'for' 'i' ',' 'arg' 'in'
+ 'enumerate' '(' 'args' ')' ':' 'replacements' '[' ""'$'"" '+' 'str' '(' 'i'
+ ')' ']' '=' 'arg' 'results' '=' '[' 'replacements' '.' 'get' '(' 'arg'
+ ',' 'arg' ')' 'for' 'arg' 'in' 'command_list' ']'
+ '# Returns list of truthy replaced arguments in command' 'return' '['
+ 'item' 'for' 'item' 'in' 'results' 'if' 'item' ']']","Perform necessary substitutions on a command list to create a CLI-ready
+    list to launch a conversion or download process via system binary.","['Perform' 'necessary' 'substitutions' 'on' 'a' 'command' 'list' 'to'
+ 'create' 'a' 'CLI' '-' 'ready' 'list' 'to' 'launch' 'a' 'conversion' 'or'
+ 'download' 'process' 'via' 'system' 'binary' '.']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/conversion/utils.py#L55-L72
+michaelpb/omnic,omnic/conversion/utils.py,convert_local,"async def convert_local(path, to_type):
+    '''
+    Given an absolute path to a local file, convert to a given to_type
+    '''
+    # Now find path between types
+    typed_foreign_res = TypedLocalResource(path)
+    original_ts = typed_foreign_res.typestring
+    conversion_path = singletons.converter_graph.find_path(
+        original_ts, to_type)
+    # print('Conversion path: ', conversion_path)
+
+    # Loop through each step in graph path and convert
+    for is_first, is_last, path_step in first_last_iterator(conversion_path):
+        converter_class, from_ts, to_ts = path_step
+        converter = converter_class()
+        in_resource = TypedLocalResource(path, from_ts)
+        if is_first:  # Ensure first resource is just the source one
+            in_resource = typed_foreign_res
+        out_resource = TypedLocalResource(path, to_ts)
+
+        if is_last:
+            out_resource = TypedPathedLocalResource(path, to_ts)
+        await converter.convert(in_resource, out_resource)",python,"async def convert_local(path, to_type):
+    '''
+    Given an absolute path to a local file, convert to a given to_type
+    '''
+    # Now find path between types
+    typed_foreign_res = TypedLocalResource(path)
+    original_ts = typed_foreign_res.typestring
+    conversion_path = singletons.converter_graph.find_path(
+        original_ts, to_type)
+    # print('Conversion path: ', conversion_path)
+
+    # Loop through each step in graph path and convert
+    for is_first, is_last, path_step in first_last_iterator(conversion_path):
+        converter_class, from_ts, to_ts = path_step
+        converter = converter_class()
+        in_resource = TypedLocalResource(path, from_ts)
+        if is_first:  # Ensure first resource is just the source one
+            in_resource = typed_foreign_res
+        out_resource = TypedLocalResource(path, to_ts)
+
+        if is_last:
+            out_resource = TypedPathedLocalResource(path, to_ts)
+        await converter.convert(in_resource, out_resource)","['async' 'def' 'convert_local' '(' 'path' ',' 'to_type' ')' ':'
+ '# Now find path between types' 'typed_foreign_res' '='
+ 'TypedLocalResource' '(' 'path' ')' 'original_ts' '=' 'typed_foreign_res'
+ '.' 'typestring' 'conversion_path' '=' 'singletons' '.' 'converter_graph'
+ '.' 'find_path' '(' 'original_ts' ',' 'to_type' ')'
+ ""# print('Conversion path: ', conversion_path)""
+ '# Loop through each step in graph path and convert' 'for' 'is_first' ','
+ 'is_last' ',' 'path_step' 'in' 'first_last_iterator' '('
+ 'conversion_path' ')' ':' 'converter_class' ',' 'from_ts' ',' 'to_ts' '='
+ 'path_step' 'converter' '=' 'converter_class' '(' ')' 'in_resource' '='
+ 'TypedLocalResource' '(' 'path' ',' 'from_ts' ')' 'if' 'is_first' ':'
+ '# Ensure first resource is just the source one' 'in_resource' '='
+ 'typed_foreign_res' 'out_resource' '=' 'TypedLocalResource' '(' 'path'
+ ',' 'to_ts' ')' 'if' 'is_last' ':' 'out_resource' '='
+ 'TypedPathedLocalResource' '(' 'path' ',' 'to_ts' ')' 'await' 'converter'
+ '.' 'convert' '(' 'in_resource' ',' 'out_resource' ')']","Given an absolute path to a local file, convert to a given to_type","['Given' 'an' 'absolute' 'path' 'to' 'a' 'local' 'file' 'convert' 'to' 'a'
+ 'given' 'to_type']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/conversion/utils.py#L76-L98
+michaelpb/omnic,omnic/conversion/utils.py,enqueue_conversion_path,"def enqueue_conversion_path(url_string, to_type, enqueue_convert):
+    '''
+    Given a URL string that has already been downloaded, enqueue
+    necessary conversion to get to target type
+    '''
+    target_ts = TypeString(to_type)
+    foreign_res = ForeignResource(url_string)
+
+    # Determine the file type of the foreign resource
+    typed_foreign_res = foreign_res.guess_typed()
+
+    if not typed_foreign_res.cache_exists():
+        # Symlink to new location that includes typed extension
+        typed_foreign_res.symlink_from(foreign_res)
+
+    # Now find path between types
+    original_ts = typed_foreign_res.typestring
+    path = singletons.converter_graph.find_path(original_ts, target_ts)
+
+    # Loop through each step in graph path and convert
+    is_first = True
+    for converter_class, from_ts, to_ts in path:
+        converter = converter_class()
+        in_resource = TypedResource(url_string, from_ts)
+        if is_first:  # Ensure first resource is just the source one
+            in_resource = TypedForeignResource(url_string, from_ts)
+        out_resource = TypedResource(url_string, to_ts)
+        enqueue_convert(converter, in_resource, out_resource)
+        is_first = False",python,"def enqueue_conversion_path(url_string, to_type, enqueue_convert):
+    '''
+    Given a URL string that has already been downloaded, enqueue
+    necessary conversion to get to target type
+    '''
+    target_ts = TypeString(to_type)
+    foreign_res = ForeignResource(url_string)
+
+    # Determine the file type of the foreign resource
+    typed_foreign_res = foreign_res.guess_typed()
+
+    if not typed_foreign_res.cache_exists():
+        # Symlink to new location that includes typed extension
+        typed_foreign_res.symlink_from(foreign_res)
+
+    # Now find path between types
+    original_ts = typed_foreign_res.typestring
+    path = singletons.converter_graph.find_path(original_ts, target_ts)
+
+    # Loop through each step in graph path and convert
+    is_first = True
+    for converter_class, from_ts, to_ts in path:
+        converter = converter_class()
+        in_resource = TypedResource(url_string, from_ts)
+        if is_first:  # Ensure first resource is just the source one
+            in_resource = TypedForeignResource(url_string, from_ts)
+        out_resource = TypedResource(url_string, to_ts)
+        enqueue_convert(converter, in_resource, out_resource)
+        is_first = False","['def' 'enqueue_conversion_path' '(' 'url_string' ',' 'to_type' ','
+ 'enqueue_convert' ')' ':' 'target_ts' '=' 'TypeString' '(' 'to_type' ')'
+ 'foreign_res' '=' 'ForeignResource' '(' 'url_string' ')'
+ '# Determine the file type of the foreign resource' 'typed_foreign_res'
+ '=' 'foreign_res' '.' 'guess_typed' '(' ')' 'if' 'not'
+ 'typed_foreign_res' '.' 'cache_exists' '(' ')' ':'
+ '# Symlink to new location that includes typed extension'
+ 'typed_foreign_res' '.' 'symlink_from' '(' 'foreign_res' ')'
+ '# Now find path between types' 'original_ts' '=' 'typed_foreign_res' '.'
+ 'typestring' 'path' '=' 'singletons' '.' 'converter_graph' '.'
+ 'find_path' '(' 'original_ts' ',' 'target_ts' ')'
+ '# Loop through each step in graph path and convert' 'is_first' '='
+ 'True' 'for' 'converter_class' ',' 'from_ts' ',' 'to_ts' 'in' 'path' ':'
+ 'converter' '=' 'converter_class' '(' ')' 'in_resource' '='
+ 'TypedResource' '(' 'url_string' ',' 'from_ts' ')' 'if' 'is_first' ':'
+ '# Ensure first resource is just the source one' 'in_resource' '='
+ 'TypedForeignResource' '(' 'url_string' ',' 'from_ts' ')' 'out_resource'
+ '=' 'TypedResource' '(' 'url_string' ',' 'to_ts' ')' 'enqueue_convert'
+ '(' 'converter' ',' 'in_resource' ',' 'out_resource' ')' 'is_first' '='
+ 'False']","Given a URL string that has already been downloaded, enqueue
+    necessary conversion to get to target type","['Given' 'a' 'URL' 'string' 'that' 'has' 'already' 'been' 'downloaded'
+ 'enqueue' 'necessary' 'conversion' 'to' 'get' 'to' 'target' 'type']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/conversion/utils.py#L101-L129
+michaelpb/omnic,omnic/conversion/resolvergraph.py,ResolverGraph.find_resource_url_basename,"def find_resource_url_basename(self, resource_url):
+        '''
+        Figure out path basename for given resource_url
+        '''
+        scheme = resource_url.parsed.scheme
+        if scheme in ('http', 'https', 'file'):
+            return _get_basename_based_on_url(resource_url)
+
+        elif scheme in ('git', 'git+https', 'git+http'):
+            if len(resource_url.args) == 2:
+                # For now, git has 2 positional args, hash and path
+                git_tree, subpath = resource_url.args
+                basename = os.path.basename(subpath)
+                if basename:
+                    return basename  # subpath was not '/' or ''
+        return _get_basename_based_on_url(resource_url)",python,"def find_resource_url_basename(self, resource_url):
+        '''
+        Figure out path basename for given resource_url
+        '''
+        scheme = resource_url.parsed.scheme
+        if scheme in ('http', 'https', 'file'):
+            return _get_basename_based_on_url(resource_url)
+
+        elif scheme in ('git', 'git+https', 'git+http'):
+            if len(resource_url.args) == 2:
+                # For now, git has 2 positional args, hash and path
+                git_tree, subpath = resource_url.args
+                basename = os.path.basename(subpath)
+                if basename:
+                    return basename  # subpath was not '/' or ''
+        return _get_basename_based_on_url(resource_url)","['def' 'find_resource_url_basename' '(' 'self' ',' 'resource_url' ')' ':'
+ 'scheme' '=' 'resource_url' '.' 'parsed' '.' 'scheme' 'if' 'scheme' 'in'
+ '(' ""'http'"" ',' ""'https'"" ',' ""'file'"" ')' ':' 'return'
+ '_get_basename_based_on_url' '(' 'resource_url' ')' 'elif' 'scheme' 'in'
+ '(' ""'git'"" ',' ""'git+https'"" ',' ""'git+http'"" ')' ':' 'if' 'len' '('
+ 'resource_url' '.' 'args' ')' '==' '2' ':'
+ '# For now, git has 2 positional args, hash and path' 'git_tree' ','
+ 'subpath' '=' 'resource_url' '.' 'args' 'basename' '=' 'os' '.' 'path'
+ '.' 'basename' '(' 'subpath' ')' 'if' 'basename' ':' 'return' 'basename'
+ ""# subpath was not '/' or ''"" 'return' '_get_basename_based_on_url' '('
+ 'resource_url' ')']",Figure out path basename for given resource_url,['Figure' 'out' 'path' 'basename' 'for' 'given' 'resource_url'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/conversion/resolvergraph.py#L27-L42
+michaelpb/omnic,omnic/conversion/resolvergraph.py,ResolverGraph.find_destination_type,"def find_destination_type(self, resource_url):
+        '''
+        Given a resource_url, figure out what it would resolve into
+        '''
+        resolvers = self.converters.values()
+        for resolver in resolvers:
+            # Not all resolvers are opinionated about destination types
+            if not hasattr(resolver, 'get_destination_type'):
+                continue
+
+            destination_type = resolver.get_destination_type(resource_url)
+            if destination_type:
+                return destination_type",python,"def find_destination_type(self, resource_url):
+        '''
+        Given a resource_url, figure out what it would resolve into
+        '''
+        resolvers = self.converters.values()
+        for resolver in resolvers:
+            # Not all resolvers are opinionated about destination types
+            if not hasattr(resolver, 'get_destination_type'):
+                continue
+
+            destination_type = resolver.get_destination_type(resource_url)
+            if destination_type:
+                return destination_type","['def' 'find_destination_type' '(' 'self' ',' 'resource_url' ')' ':'
+ 'resolvers' '=' 'self' '.' 'converters' '.' 'values' '(' ')' 'for'
+ 'resolver' 'in' 'resolvers' ':'
+ '# Not all resolvers are opinionated about destination types' 'if' 'not'
+ 'hasattr' '(' 'resolver' ',' ""'get_destination_type'"" ')' ':' 'continue'
+ 'destination_type' '=' 'resolver' '.' 'get_destination_type' '('
+ 'resource_url' ')' 'if' 'destination_type' ':' 'return'
+ 'destination_type']","Given a resource_url, figure out what it would resolve into","['Given' 'a' 'resource_url' 'figure' 'out' 'what' 'it' 'would' 'resolve'
+ 'into']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/conversion/resolvergraph.py#L44-L56
+michaelpb/omnic,omnic/conversion/resolvergraph.py,ResolverGraph.download,"async def download(self, resource_url):
+        '''
+        Download given Resource URL by finding path through graph and applying
+        each step
+        '''
+        resolver_path = self.find_path_from_url(resource_url)
+        await self.apply_resolver_path(resource_url, resolver_path)",python,"async def download(self, resource_url):
+        '''
+        Download given Resource URL by finding path through graph and applying
+        each step
+        '''
+        resolver_path = self.find_path_from_url(resource_url)
+        await self.apply_resolver_path(resource_url, resolver_path)","['async' 'def' 'download' '(' 'self' ',' 'resource_url' ')' ':'
+ 'resolver_path' '=' 'self' '.' 'find_path_from_url' '(' 'resource_url'
+ ')' 'await' 'self' '.' 'apply_resolver_path' '(' 'resource_url' ','
+ 'resolver_path' ')']","Download given Resource URL by finding path through graph and applying
+        each step","['Download' 'given' 'Resource' 'URL' 'by' 'finding' 'path' 'through'
+ 'graph' 'and' 'applying' 'each' 'step']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/conversion/resolvergraph.py#L76-L82
+michaelpb/omnic,omnic/conversion/resolver.py,download,"async def download(resource_url):
+    '''
+    Download given resource_url
+    '''
+    scheme = resource_url.parsed.scheme
+    if scheme in ('http', 'https'):
+        await download_http(resource_url)
+    elif scheme in ('git', 'git+https', 'git+http'):
+        await download_git(resource_url)
+    else:
+        raise ValueError('Unknown URL scheme: ""%s""' % scheme)",python,"async def download(resource_url):
+    '''
+    Download given resource_url
+    '''
+    scheme = resource_url.parsed.scheme
+    if scheme in ('http', 'https'):
+        await download_http(resource_url)
+    elif scheme in ('git', 'git+https', 'git+http'):
+        await download_git(resource_url)
+    else:
+        raise ValueError('Unknown URL scheme: ""%s""' % scheme)","['async' 'def' 'download' '(' 'resource_url' ')' ':' 'scheme' '='
+ 'resource_url' '.' 'parsed' '.' 'scheme' 'if' 'scheme' 'in' '(' ""'http'""
+ ',' ""'https'"" ')' ':' 'await' 'download_http' '(' 'resource_url' ')'
+ 'elif' 'scheme' 'in' '(' ""'git'"" ',' ""'git+https'"" ',' ""'git+http'"" ')'
+ ':' 'await' 'download_git' '(' 'resource_url' ')' 'else' ':' 'raise'
+ 'ValueError' '(' '\'Unknown URL scheme: ""%s""\'' '%' 'scheme' ')']",Download given resource_url,['Download' 'given' 'resource_url'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/conversion/resolver.py#L110-L120
+michaelpb/omnic,omnic/conversion/graph.py,ConverterGraph._setup_converter_graph,"def _setup_converter_graph(self, converter_list, prune_converters):
+        '''
+        Set up directed conversion graph, pruning unavailable converters as
+        necessary
+        '''
+        for converter in converter_list:
+            if prune_converters:
+                try:
+                    converter.configure()
+                except ConverterUnavailable as e:
+                    log.warning('%s unavailable: %s' %
+                                (converter.__class__.__name__, str(e)))
+                    continue
+
+            for in_ in converter.inputs:
+                for out in converter.outputs:
+                    self.dgraph.add_edge(in_, out, converter.cost)
+                    self.converters[(in_, out)] = converter
+
+            if hasattr(converter, 'direct_outputs'):
+                self._setup_direct_converter(converter)",python,"def _setup_converter_graph(self, converter_list, prune_converters):
+        '''
+        Set up directed conversion graph, pruning unavailable converters as
+        necessary
+        '''
+        for converter in converter_list:
+            if prune_converters:
+                try:
+                    converter.configure()
+                except ConverterUnavailable as e:
+                    log.warning('%s unavailable: %s' %
+                                (converter.__class__.__name__, str(e)))
+                    continue
+
+            for in_ in converter.inputs:
+                for out in converter.outputs:
+                    self.dgraph.add_edge(in_, out, converter.cost)
+                    self.converters[(in_, out)] = converter
+
+            if hasattr(converter, 'direct_outputs'):
+                self._setup_direct_converter(converter)","['def' '_setup_converter_graph' '(' 'self' ',' 'converter_list' ','
+ 'prune_converters' ')' ':' 'for' 'converter' 'in' 'converter_list' ':'
+ 'if' 'prune_converters' ':' 'try' ':' 'converter' '.' 'configure' '(' ')'
+ 'except' 'ConverterUnavailable' 'as' 'e' ':' 'log' '.' 'warning' '('
+ ""'%s unavailable: %s'"" '%' '(' 'converter' '.' '__class__' '.' '__name__'
+ ',' 'str' '(' 'e' ')' ')' ')' 'continue' 'for' 'in_' 'in' 'converter' '.'
+ 'inputs' ':' 'for' 'out' 'in' 'converter' '.' 'outputs' ':' 'self' '.'
+ 'dgraph' '.' 'add_edge' '(' 'in_' ',' 'out' ',' 'converter' '.' 'cost'
+ ')' 'self' '.' 'converters' '[' '(' 'in_' ',' 'out' ')' ']' '='
+ 'converter' 'if' 'hasattr' '(' 'converter' ',' ""'direct_outputs'"" ')' ':'
+ 'self' '.' '_setup_direct_converter' '(' 'converter' ')']","Set up directed conversion graph, pruning unavailable converters as
+        necessary","['Set' 'up' 'directed' 'conversion' 'graph' 'pruning' 'unavailable'
+ 'converters' 'as' 'necessary']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/conversion/graph.py#L38-L58
+michaelpb/omnic,omnic/conversion/graph.py,ConverterGraph._setup_preferred_paths,"def _setup_preferred_paths(self, preferred_conversion_paths):
+        '''
+        Add given valid preferred conversion paths
+        '''
+        for path in preferred_conversion_paths:
+            for pair in pair_looper(path):
+                if pair not in self.converters:
+                    log.warning('Invalid conversion path %s, unknown step %s' %
+                                (repr(path), repr(pair)))
+                    break
+            else:
+                # If it did not break, then add to dgraph
+                self.dgraph.add_preferred_path(*path)",python,"def _setup_preferred_paths(self, preferred_conversion_paths):
+        '''
+        Add given valid preferred conversion paths
+        '''
+        for path in preferred_conversion_paths:
+            for pair in pair_looper(path):
+                if pair not in self.converters:
+                    log.warning('Invalid conversion path %s, unknown step %s' %
+                                (repr(path), repr(pair)))
+                    break
+            else:
+                # If it did not break, then add to dgraph
+                self.dgraph.add_preferred_path(*path)","['def' '_setup_preferred_paths' '(' 'self' ','
+ 'preferred_conversion_paths' ')' ':' 'for' 'path' 'in'
+ 'preferred_conversion_paths' ':' 'for' 'pair' 'in' 'pair_looper' '('
+ 'path' ')' ':' 'if' 'pair' 'not' 'in' 'self' '.' 'converters' ':' 'log'
+ '.' 'warning' '(' ""'Invalid conversion path %s, unknown step %s'"" '%' '('
+ 'repr' '(' 'path' ')' ',' 'repr' '(' 'pair' ')' ')' ')' 'break' 'else'
+ ':' '# If it did not break, then add to dgraph' 'self' '.' 'dgraph' '.'
+ 'add_preferred_path' '(' '*' 'path' ')']",Add given valid preferred conversion paths,['Add' 'given' 'valid' 'preferred' 'conversion' 'paths'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/conversion/graph.py#L60-L72
+michaelpb/omnic,omnic/conversion/graph.py,ConverterGraph._setup_profiles,"def _setup_profiles(self, conversion_profiles):
+        '''
+        Add given conversion profiles checking for invalid profiles
+        '''
+        # Check for invalid profiles
+        for key, path in conversion_profiles.items():
+            if isinstance(path, str):
+                path = (path, )
+            for left, right in pair_looper(path):
+                pair = (_format(left), _format(right))
+                if pair not in self.converters:
+                    msg = 'Invalid conversion profile %s, unknown step %s'
+                    log.warning(msg % (repr(key), repr(pair)))
+                    break
+            else:
+                # If it did not break, then add to conversion profiles
+                self.conversion_profiles[key] = path",python,"def _setup_profiles(self, conversion_profiles):
+        '''
+        Add given conversion profiles checking for invalid profiles
+        '''
+        # Check for invalid profiles
+        for key, path in conversion_profiles.items():
+            if isinstance(path, str):
+                path = (path, )
+            for left, right in pair_looper(path):
+                pair = (_format(left), _format(right))
+                if pair not in self.converters:
+                    msg = 'Invalid conversion profile %s, unknown step %s'
+                    log.warning(msg % (repr(key), repr(pair)))
+                    break
+            else:
+                # If it did not break, then add to conversion profiles
+                self.conversion_profiles[key] = path","['def' '_setup_profiles' '(' 'self' ',' 'conversion_profiles' ')' ':'
+ '# Check for invalid profiles' 'for' 'key' ',' 'path' 'in'
+ 'conversion_profiles' '.' 'items' '(' ')' ':' 'if' 'isinstance' '('
+ 'path' ',' 'str' ')' ':' 'path' '=' '(' 'path' ',' ')' 'for' 'left' ','
+ 'right' 'in' 'pair_looper' '(' 'path' ')' ':' 'pair' '=' '(' '_format'
+ '(' 'left' ')' ',' '_format' '(' 'right' ')' ')' 'if' 'pair' 'not' 'in'
+ 'self' '.' 'converters' ':' 'msg' '='
+ ""'Invalid conversion profile %s, unknown step %s'"" 'log' '.' 'warning'
+ '(' 'msg' '%' '(' 'repr' '(' 'key' ')' ',' 'repr' '(' 'pair' ')' ')' ')'
+ 'break' 'else' ':'
+ '# If it did not break, then add to conversion profiles' 'self' '.'
+ 'conversion_profiles' '[' 'key' ']' '=' 'path']",Add given conversion profiles checking for invalid profiles,"['Add' 'given' 'conversion' 'profiles' 'checking' 'for' 'invalid'
+ 'profiles']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/conversion/graph.py#L74-L90
+michaelpb/omnic,omnic/conversion/graph.py,ConverterGraph._setup_direct_converter,"def _setup_direct_converter(self, converter):
+        '''
+        Given a converter, set up the direct_output routes for conversions,
+        which is used for transcoding between similar datatypes.
+        '''
+        inputs = (
+            converter.direct_inputs
+            if hasattr(converter, 'direct_inputs')
+            else converter.inputs
+        )
+        for in_ in inputs:
+            for out in converter.direct_outputs:
+                self.direct_converters[(in_, out)] = converter",python,"def _setup_direct_converter(self, converter):
+        '''
+        Given a converter, set up the direct_output routes for conversions,
+        which is used for transcoding between similar datatypes.
+        '''
+        inputs = (
+            converter.direct_inputs
+            if hasattr(converter, 'direct_inputs')
+            else converter.inputs
+        )
+        for in_ in inputs:
+            for out in converter.direct_outputs:
+                self.direct_converters[(in_, out)] = converter","['def' '_setup_direct_converter' '(' 'self' ',' 'converter' ')' ':'
+ 'inputs' '=' '(' 'converter' '.' 'direct_inputs' 'if' 'hasattr' '('
+ 'converter' ',' ""'direct_inputs'"" ')' 'else' 'converter' '.' 'inputs' ')'
+ 'for' 'in_' 'in' 'inputs' ':' 'for' 'out' 'in' 'converter' '.'
+ 'direct_outputs' ':' 'self' '.' 'direct_converters' '[' '(' 'in_' ','
+ 'out' ')' ']' '=' 'converter']","Given a converter, set up the direct_output routes for conversions,
+        which is used for transcoding between similar datatypes.","['Given' 'a' 'converter' 'set' 'up' 'the' 'direct_output' 'routes' 'for'
+ 'conversions' 'which' 'is' 'used' 'for' 'transcoding' 'between' 'similar'
+ 'datatypes' '.']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/conversion/graph.py#L92-L104
+michaelpb/omnic,omnic/conversion/graph.py,ConverterGraph.find_path,"def find_path(self, in_, out):
+        '''
+        Given an input and output TypeString, produce a graph traversal,
+        keeping in mind special options like Conversion Profiles, Preferred
+        Paths, and Direct Conversions.
+        '''
+        if in_.arguments:
+            raise ValueError('Cannot originate path in argumented TypeString')
+
+        # Determine conversion profile. This is either simply the output, OR,
+        # if a custom profile has been specified for this output, that custom
+        # path or type is used.
+        profile = self.conversion_profiles.get(str(out), str(out))
+        if isinstance(profile, str):
+            profile = (profile, )
+        types_by_format = {_format(s): TypeString(s) for s in profile}
+
+        # Normalize input and output types to string
+        in_str = str(in_)
+        out_str = _format(profile[0])
+
+        # First check for direct conversions, returning immediately if found
+        direct_converter = self.direct_converters.get((in_str, out_str))
+        if direct_converter:
+            out_ts = types_by_format.get(out_str, TypeString(out_str))
+            return [(direct_converter, TypeString(in_str), out_ts)]
+
+        # No direct conversions was found, so find path through graph.
+        # If profile was plural, add in extra steps.
+        path = self.dgraph.shortest_path(in_str, out_str)
+        path += profile[1:]
+
+        # Loop through each edge traversal, adding converters and type
+        # string pairs as we go along. This is to ensure conversion
+        # profiles that have arguments mid-profile get included.
+        results = []
+        for left, right in pair_looper(path):
+            converter = self.converters.get((_format(left), _format(right)))
+            right_typestring = types_by_format.get(right, TypeString(right))
+            results.append((converter, TypeString(left), right_typestring))
+        return results",python,"def find_path(self, in_, out):
+        '''
+        Given an input and output TypeString, produce a graph traversal,
+        keeping in mind special options like Conversion Profiles, Preferred
+        Paths, and Direct Conversions.
+        '''
+        if in_.arguments:
+            raise ValueError('Cannot originate path in argumented TypeString')
+
+        # Determine conversion profile. This is either simply the output, OR,
+        # if a custom profile has been specified for this output, that custom
+        # path or type is used.
+        profile = self.conversion_profiles.get(str(out), str(out))
+        if isinstance(profile, str):
+            profile = (profile, )
+        types_by_format = {_format(s): TypeString(s) for s in profile}
+
+        # Normalize input and output types to string
+        in_str = str(in_)
+        out_str = _format(profile[0])
+
+        # First check for direct conversions, returning immediately if found
+        direct_converter = self.direct_converters.get((in_str, out_str))
+        if direct_converter:
+            out_ts = types_by_format.get(out_str, TypeString(out_str))
+            return [(direct_converter, TypeString(in_str), out_ts)]
+
+        # No direct conversions was found, so find path through graph.
+        # If profile was plural, add in extra steps.
+        path = self.dgraph.shortest_path(in_str, out_str)
+        path += profile[1:]
+
+        # Loop through each edge traversal, adding converters and type
+        # string pairs as we go along. This is to ensure conversion
+        # profiles that have arguments mid-profile get included.
+        results = []
+        for left, right in pair_looper(path):
+            converter = self.converters.get((_format(left), _format(right)))
+            right_typestring = types_by_format.get(right, TypeString(right))
+            results.append((converter, TypeString(left), right_typestring))
+        return results","['def' 'find_path' '(' 'self' ',' 'in_' ',' 'out' ')' ':' 'if' 'in_' '.'
+ 'arguments' ':' 'raise' 'ValueError' '('
+ ""'Cannot originate path in argumented TypeString'"" ')'
+ '# Determine conversion profile. This is either simply the output, OR,'
+ '# if a custom profile has been specified for this output, that custom'
+ '# path or type is used.' 'profile' '=' 'self' '.' 'conversion_profiles'
+ '.' 'get' '(' 'str' '(' 'out' ')' ',' 'str' '(' 'out' ')' ')' 'if'
+ 'isinstance' '(' 'profile' ',' 'str' ')' ':' 'profile' '=' '(' 'profile'
+ ',' ')' 'types_by_format' '=' '{' '_format' '(' 's' ')' ':' 'TypeString'
+ '(' 's' ')' 'for' 's' 'in' 'profile' '}'
+ '# Normalize input and output types to string' 'in_str' '=' 'str' '('
+ 'in_' ')' 'out_str' '=' '_format' '(' 'profile' '[' '0' ']' ')'
+ '# First check for direct conversions, returning immediately if found'
+ 'direct_converter' '=' 'self' '.' 'direct_converters' '.' 'get' '(' '('
+ 'in_str' ',' 'out_str' ')' ')' 'if' 'direct_converter' ':' 'out_ts' '='
+ 'types_by_format' '.' 'get' '(' 'out_str' ',' 'TypeString' '(' 'out_str'
+ ')' ')' 'return' '[' '(' 'direct_converter' ',' 'TypeString' '(' 'in_str'
+ ')' ',' 'out_ts' ')' ']'
+ '# No direct conversions was found, so find path through graph.'
+ '# If profile was plural, add in extra steps.' 'path' '=' 'self' '.'
+ 'dgraph' '.' 'shortest_path' '(' 'in_str' ',' 'out_str' ')' 'path' '+='
+ 'profile' '[' '1' ':' ']'
+ '# Loop through each edge traversal, adding converters and type'
+ '# string pairs as we go along. This is to ensure conversion'
+ '# profiles that have arguments mid-profile get included.' 'results' '='
+ '[' ']' 'for' 'left' ',' 'right' 'in' 'pair_looper' '(' 'path' ')' ':'
+ 'converter' '=' 'self' '.' 'converters' '.' 'get' '(' '(' '_format' '('
+ 'left' ')' ',' '_format' '(' 'right' ')' ')' ')' 'right_typestring' '='
+ 'types_by_format' '.' 'get' '(' 'right' ',' 'TypeString' '(' 'right' ')'
+ ')' 'results' '.' 'append' '(' '(' 'converter' ',' 'TypeString' '('
+ 'left' ')' ',' 'right_typestring' ')' ')' 'return' 'results']","Given an input and output TypeString, produce a graph traversal,
+        keeping in mind special options like Conversion Profiles, Preferred
+        Paths, and Direct Conversions.","['Given' 'an' 'input' 'and' 'output' 'TypeString' 'produce' 'a' 'graph'
+ 'traversal' 'keeping' 'in' 'mind' 'special' 'options' 'like' 'Conversion'
+ 'Profiles' 'Preferred' 'Paths' 'and' 'Direct' 'Conversions' '.']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/conversion/graph.py#L106-L146
+michaelpb/omnic,omnic/conversion/graph.py,ConverterGraph.find_path_with_profiles,"def find_path_with_profiles(self, conversion_profiles, in_, out):
+        '''
+        Like find_path, except forces the conversion profiles to be the given
+        conversion profile setting. Useful for ""temporarily overriding"" the
+        global conversion profiles with your own.
+        '''
+        original_profiles = dict(self.conversion_profiles)
+        self._setup_profiles(conversion_profiles)
+        results = self.find_path(in_, out)
+        self.conversion_profiles = original_profiles
+        return results",python,"def find_path_with_profiles(self, conversion_profiles, in_, out):
+        '''
+        Like find_path, except forces the conversion profiles to be the given
+        conversion profile setting. Useful for ""temporarily overriding"" the
+        global conversion profiles with your own.
+        '''
+        original_profiles = dict(self.conversion_profiles)
+        self._setup_profiles(conversion_profiles)
+        results = self.find_path(in_, out)
+        self.conversion_profiles = original_profiles
+        return results","['def' 'find_path_with_profiles' '(' 'self' ',' 'conversion_profiles' ','
+ 'in_' ',' 'out' ')' ':' 'original_profiles' '=' 'dict' '(' 'self' '.'
+ 'conversion_profiles' ')' 'self' '.' '_setup_profiles' '('
+ 'conversion_profiles' ')' 'results' '=' 'self' '.' 'find_path' '(' 'in_'
+ ',' 'out' ')' 'self' '.' 'conversion_profiles' '=' 'original_profiles'
+ 'return' 'results']","Like find_path, except forces the conversion profiles to be the given
+        conversion profile setting. Useful for ""temporarily overriding"" the
+        global conversion profiles with your own.","['Like' 'find_path' 'except' 'forces' 'the' 'conversion' 'profiles' 'to'
+ 'be' 'the' 'given' 'conversion' 'profile' 'setting' '.' 'Useful' 'for'
+ 'temporarily' 'overriding' 'the' 'global' 'conversion' 'profiles' 'with'
+ 'your' 'own' '.']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/conversion/graph.py#L148-L158
+michaelpb/omnic,omnic/web/security.py,rewrite_middleware,"async def rewrite_middleware(server, request):
+    '''
+    Sanic middleware that utilizes a security class's ""rewrite"" method to
+    check
+    '''
+    if singletons.settings.SECURITY is not None:
+        security_class = singletons.settings.load('SECURITY')
+    else:
+        security_class = DummySecurity
+    security = security_class()
+    try:
+        new_path = await security.rewrite(request)
+    except SecurityException as e:
+        msg = ''
+        if DEBUG:
+            msg = str(e)
+        return server.response.text(msg, status=400)
+    request.path = new_path",python,"async def rewrite_middleware(server, request):
+    '''
+    Sanic middleware that utilizes a security class's ""rewrite"" method to
+    check
+    '''
+    if singletons.settings.SECURITY is not None:
+        security_class = singletons.settings.load('SECURITY')
+    else:
+        security_class = DummySecurity
+    security = security_class()
+    try:
+        new_path = await security.rewrite(request)
+    except SecurityException as e:
+        msg = ''
+        if DEBUG:
+            msg = str(e)
+        return server.response.text(msg, status=400)
+    request.path = new_path","['async' 'def' 'rewrite_middleware' '(' 'server' ',' 'request' ')' ':'
+ 'if' 'singletons' '.' 'settings' '.' 'SECURITY' 'is' 'not' 'None' ':'
+ 'security_class' '=' 'singletons' '.' 'settings' '.' 'load' '('
+ ""'SECURITY'"" ')' 'else' ':' 'security_class' '=' 'DummySecurity'
+ 'security' '=' 'security_class' '(' ')' 'try' ':' 'new_path' '=' 'await'
+ 'security' '.' 'rewrite' '(' 'request' ')' 'except' 'SecurityException'
+ 'as' 'e' ':' 'msg' '=' ""''"" 'if' 'DEBUG' ':' 'msg' '=' 'str' '(' 'e' ')'
+ 'return' 'server' '.' 'response' '.' 'text' '(' 'msg' ',' 'status' '='
+ '400' ')' 'request' '.' 'path' '=' 'new_path']","Sanic middleware that utilizes a security class's ""rewrite"" method to
+    check","['Sanic' 'middleware' 'that' 'utilizes' 'a' 'security' 'class' 's'
+ 'rewrite' 'method' 'to' 'check']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/web/security.py#L66-L83
+michaelpb/omnic,omnic/types/resource.py,Resource.cache_makedirs,"def cache_makedirs(self, subdir=None):
+        '''
+        Make necessary directories to hold cache value
+        '''
+        if subdir is not None:
+            dirname = self.cache_path
+            if subdir:
+                dirname = os.path.join(dirname, subdir)
+        else:
+            dirname = os.path.dirname(self.cache_path)
+        os.makedirs(dirname, exist_ok=True)",python,"def cache_makedirs(self, subdir=None):
+        '''
+        Make necessary directories to hold cache value
+        '''
+        if subdir is not None:
+            dirname = self.cache_path
+            if subdir:
+                dirname = os.path.join(dirname, subdir)
+        else:
+            dirname = os.path.dirname(self.cache_path)
+        os.makedirs(dirname, exist_ok=True)","['def' 'cache_makedirs' '(' 'self' ',' 'subdir' '=' 'None' ')' ':' 'if'
+ 'subdir' 'is' 'not' 'None' ':' 'dirname' '=' 'self' '.' 'cache_path' 'if'
+ 'subdir' ':' 'dirname' '=' 'os' '.' 'path' '.' 'join' '(' 'dirname' ','
+ 'subdir' ')' 'else' ':' 'dirname' '=' 'os' '.' 'path' '.' 'dirname' '('
+ 'self' '.' 'cache_path' ')' 'os' '.' 'makedirs' '(' 'dirname' ','
+ 'exist_ok' '=' 'True' ')']",Make necessary directories to hold cache value,['Make' 'necessary' 'directories' 'to' 'hold' 'cache' 'value'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/types/resource.py#L63-L73
+michaelpb/omnic,omnic/builtin/services/viewer/views.py,viewers_js,"async def viewers_js(request):
+    '''
+    Viewers determines the viewers installed based on settings, then uses the
+    conversion infrastructure to convert all these JS files into a single JS
+    bundle, that is then served. As with media, it will simply serve a cached
+    version if necessary.
+    '''
+    # Generates single bundle as such:
+    # BytesResource -> ViewerNodePackageBuilder -> nodepackage -> ... -> min.js
+    response = singletons.server.response
+
+    # Create a viewers resource, which is simply a JSON encoded description of
+    # the viewers necessary for this viewers bundle.
+    viewers_resource = singletons.viewers.get_resource()
+    url_string = viewers_resource.url_string
+
+    target_ts = TypeString('min.js')  # get a minified JS bundle
+    target_resource = TypedResource(url_string, target_ts)
+
+    if target_resource.cache_exists():
+        return await response.file(target_resource.cache_path, headers={
+            'Content-Type': 'application/javascript',
+        })
+
+    # Otherwise, does not exist, save this descriptor to cache and kick off
+    # conversion process
+    if not viewers_resource.cache_exists():
+        viewers_resource.save()
+
+    # Queue up a single function that will in turn queue up conversion process
+    await singletons.workers.async_enqueue_sync(
+        enqueue_conversion_path,
+        url_string,
+        str(target_ts),
+        singletons.workers.enqueue_convert
+    )
+
+    return response.text(NOT_LOADED_JS, headers={
+        'Content-Type': 'application/javascript',
+    })",python,"async def viewers_js(request):
+    '''
+    Viewers determines the viewers installed based on settings, then uses the
+    conversion infrastructure to convert all these JS files into a single JS
+    bundle, that is then served. As with media, it will simply serve a cached
+    version if necessary.
+    '''
+    # Generates single bundle as such:
+    # BytesResource -> ViewerNodePackageBuilder -> nodepackage -> ... -> min.js
+    response = singletons.server.response
+
+    # Create a viewers resource, which is simply a JSON encoded description of
+    # the viewers necessary for this viewers bundle.
+    viewers_resource = singletons.viewers.get_resource()
+    url_string = viewers_resource.url_string
+
+    target_ts = TypeString('min.js')  # get a minified JS bundle
+    target_resource = TypedResource(url_string, target_ts)
+
+    if target_resource.cache_exists():
+        return await response.file(target_resource.cache_path, headers={
+            'Content-Type': 'application/javascript',
+        })
+
+    # Otherwise, does not exist, save this descriptor to cache and kick off
+    # conversion process
+    if not viewers_resource.cache_exists():
+        viewers_resource.save()
+
+    # Queue up a single function that will in turn queue up conversion process
+    await singletons.workers.async_enqueue_sync(
+        enqueue_conversion_path,
+        url_string,
+        str(target_ts),
+        singletons.workers.enqueue_convert
+    )
+
+    return response.text(NOT_LOADED_JS, headers={
+        'Content-Type': 'application/javascript',
+    })","['async' 'def' 'viewers_js' '(' 'request' ')' ':'
+ '# Generates single bundle as such:'
+ '# BytesResource -> ViewerNodePackageBuilder -> nodepackage -> ... -> min.js'
+ 'response' '=' 'singletons' '.' 'server' '.' 'response'
+ '# Create a viewers resource, which is simply a JSON encoded description of'
+ '# the viewers necessary for this viewers bundle.' 'viewers_resource' '='
+ 'singletons' '.' 'viewers' '.' 'get_resource' '(' ')' 'url_string' '='
+ 'viewers_resource' '.' 'url_string' 'target_ts' '=' 'TypeString' '('
+ ""'min.js'"" ')' '# get a minified JS bundle' 'target_resource' '='
+ 'TypedResource' '(' 'url_string' ',' 'target_ts' ')' 'if'
+ 'target_resource' '.' 'cache_exists' '(' ')' ':' 'return' 'await'
+ 'response' '.' 'file' '(' 'target_resource' '.' 'cache_path' ','
+ 'headers' '=' '{' ""'Content-Type'"" ':' ""'application/javascript'"" ',' '}'
+ ')'
+ '# Otherwise, does not exist, save this descriptor to cache and kick off'
+ '# conversion process' 'if' 'not' 'viewers_resource' '.' 'cache_exists'
+ '(' ')' ':' 'viewers_resource' '.' 'save' '(' ')'
+ '# Queue up a single function that will in turn queue up conversion process'
+ 'await' 'singletons' '.' 'workers' '.' 'async_enqueue_sync' '('
+ 'enqueue_conversion_path' ',' 'url_string' ',' 'str' '(' 'target_ts' ')'
+ ',' 'singletons' '.' 'workers' '.' 'enqueue_convert' ')' 'return'
+ 'response' '.' 'text' '(' 'NOT_LOADED_JS' ',' 'headers' '=' '{'
+ ""'Content-Type'"" ':' ""'application/javascript'"" ',' '}' ')']","Viewers determines the viewers installed based on settings, then uses the
+    conversion infrastructure to convert all these JS files into a single JS
+    bundle, that is then served. As with media, it will simply serve a cached
+    version if necessary.","['Viewers' 'determines' 'the' 'viewers' 'installed' 'based' 'on'
+ 'settings' 'then' 'uses' 'the' 'conversion' 'infrastructure' 'to'
+ 'convert' 'all' 'these' 'JS' 'files' 'into' 'a' 'single' 'JS' 'bundle'
+ 'that' 'is' 'then' 'served' '.' 'As' 'with' 'media' 'it' 'will' 'simply'
+ 'serve' 'a' 'cached' 'version' 'if' 'necessary' '.']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/builtin/services/viewer/views.py#L18-L57
+michaelpb/omnic,omnic/cli/commandparser.py,CommandParser.gen_subcommand_help,"def gen_subcommand_help(self):
+        '''
+        Generates s
+        '''
+        commands = sorted(self.subcommands.items(), key=lambda i: i[0])
+        return '\n'.join(
+            '%s %s' % (
+                subcommand.ljust(15),
+                textwrap.shorten(description, width=61),
+            )
+            for subcommand, (description, action, opts) in commands
+        )",python,"def gen_subcommand_help(self):
+        '''
+        Generates s
+        '''
+        commands = sorted(self.subcommands.items(), key=lambda i: i[0])
+        return '\n'.join(
+            '%s %s' % (
+                subcommand.ljust(15),
+                textwrap.shorten(description, width=61),
+            )
+            for subcommand, (description, action, opts) in commands
+        )","['def' 'gen_subcommand_help' '(' 'self' ')' ':' 'commands' '=' 'sorted'
+ '(' 'self' '.' 'subcommands' '.' 'items' '(' ')' ',' 'key' '=' 'lambda'
+ 'i' ':' 'i' '[' '0' ']' ')' 'return' ""'\\n'"" '.' 'join' '(' ""'%s %s'"" '%'
+ '(' 'subcommand' '.' 'ljust' '(' '15' ')' ',' 'textwrap' '.' 'shorten'
+ '(' 'description' ',' 'width' '=' '61' ')' ',' ')' 'for' 'subcommand' ','
+ '(' 'description' ',' 'action' ',' 'opts' ')' 'in' 'commands' ')']",Generates s,['Generates' 's'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/cli/commandparser.py#L16-L27
+michaelpb/omnic,omnic/cli/commandparser.py,CommandParser.parse_args_to_action_args,"def parse_args_to_action_args(self, argv=None):
+        '''
+        Parses args and returns an action and the args that were parsed
+        '''
+        args = self.parse_args(argv)
+        action = self.subcommands[args.subcommand][1]
+        return action, args",python,"def parse_args_to_action_args(self, argv=None):
+        '''
+        Parses args and returns an action and the args that were parsed
+        '''
+        args = self.parse_args(argv)
+        action = self.subcommands[args.subcommand][1]
+        return action, args","['def' 'parse_args_to_action_args' '(' 'self' ',' 'argv' '=' 'None' ')'
+ ':' 'args' '=' 'self' '.' 'parse_args' '(' 'argv' ')' 'action' '=' 'self'
+ '.' 'subcommands' '[' 'args' '.' 'subcommand' ']' '[' '1' ']' 'return'
+ 'action' ',' 'args']",Parses args and returns an action and the args that were parsed,"['Parses' 'args' 'and' 'returns' 'an' 'action' 'and' 'the' 'args' 'that'
+ 'were' 'parsed']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/cli/commandparser.py#L64-L70
+michaelpb/omnic,omnic/cli/commandparser.py,CommandParser.register_subparser,"def register_subparser(self, action, name, description='', arguments={}):
+        '''
+        Registers a new subcommand with a given function action.
+
+        If the function action is synchronous
+        '''
+        action = coerce_to_synchronous(action)
+        opts = []
+        for flags, kwargs in arguments.items():
+            if isinstance(flags, str):
+                flags = tuple([flags])
+            opts.append((flags, kwargs))
+        self.subcommands[name] = (description, action, opts)",python,"def register_subparser(self, action, name, description='', arguments={}):
+        '''
+        Registers a new subcommand with a given function action.
+
+        If the function action is synchronous
+        '''
+        action = coerce_to_synchronous(action)
+        opts = []
+        for flags, kwargs in arguments.items():
+            if isinstance(flags, str):
+                flags = tuple([flags])
+            opts.append((flags, kwargs))
+        self.subcommands[name] = (description, action, opts)","['def' 'register_subparser' '(' 'self' ',' 'action' ',' 'name' ','
+ 'description' '=' ""''"" ',' 'arguments' '=' '{' '}' ')' ':' 'action' '='
+ 'coerce_to_synchronous' '(' 'action' ')' 'opts' '=' '[' ']' 'for' 'flags'
+ ',' 'kwargs' 'in' 'arguments' '.' 'items' '(' ')' ':' 'if' 'isinstance'
+ '(' 'flags' ',' 'str' ')' ':' 'flags' '=' 'tuple' '(' '[' 'flags' ']' ')'
+ 'opts' '.' 'append' '(' '(' 'flags' ',' 'kwargs' ')' ')' 'self' '.'
+ 'subcommands' '[' 'name' ']' '=' '(' 'description' ',' 'action' ','
+ 'opts' ')']","Registers a new subcommand with a given function action.
+
+        If the function action is synchronous","['Registers' 'a' 'new' 'subcommand' 'with' 'a' 'given' 'function' 'action'
+ '.']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/cli/commandparser.py#L72-L84
+michaelpb/omnic,omnic/cli/commandparser.py,CommandParser.subcommand,"def subcommand(self, description='', arguments={}):
+        '''
+        Decorator for quickly adding subcommands to the omnic CLI
+        '''
+        def decorator(func):
+            self.register_subparser(
+                func,
+                func.__name__.replace('_', '-'),
+                description=description,
+                arguments=arguments,
+            )
+            return func
+        return decorator",python,"def subcommand(self, description='', arguments={}):
+        '''
+        Decorator for quickly adding subcommands to the omnic CLI
+        '''
+        def decorator(func):
+            self.register_subparser(
+                func,
+                func.__name__.replace('_', '-'),
+                description=description,
+                arguments=arguments,
+            )
+            return func
+        return decorator","['def' 'subcommand' '(' 'self' ',' 'description' '=' ""''"" ',' 'arguments'
+ '=' '{' '}' ')' ':' 'def' 'decorator' '(' 'func' ')' ':' 'self' '.'
+ 'register_subparser' '(' 'func' ',' 'func' '.' '__name__' '.' 'replace'
+ '(' ""'_'"" ',' ""'-'"" ')' ',' 'description' '=' 'description' ','
+ 'arguments' '=' 'arguments' ',' ')' 'return' 'func' 'return' 'decorator']",Decorator for quickly adding subcommands to the omnic CLI,"['Decorator' 'for' 'quickly' 'adding' 'subcommands' 'to' 'the' 'omnic'
+ 'CLI']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/cli/commandparser.py#L86-L98
+michaelpb/omnic,omnic/cli/commandparser.py,CommandParser.print,"def print(self, *args, **kwargs):
+        '''
+        Utility function that behaves identically to 'print' except it only
+        prints if verbose
+        '''
+        if self._last_args and self._last_args.verbose:
+            print(*args, **kwargs)",python,"def print(self, *args, **kwargs):
+        '''
+        Utility function that behaves identically to 'print' except it only
+        prints if verbose
+        '''
+        if self._last_args and self._last_args.verbose:
+            print(*args, **kwargs)","['def' 'print' '(' 'self' ',' '*' 'args' ',' '*' '*' 'kwargs' ')' ':' 'if'
+ 'self' '.' '_last_args' 'and' 'self' '.' '_last_args' '.' 'verbose' ':'
+ 'print' '(' '*' 'args' ',' '*' '*' 'kwargs' ')']","Utility function that behaves identically to 'print' except it only
+        prints if verbose","['Utility' 'function' 'that' 'behaves' 'identically' 'to' 'print' 'except'
+ 'it' 'only' 'prints' 'if' 'verbose']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/cli/commandparser.py#L100-L106
+michaelpb/omnic,omnic/utils/asynctools.py,await_all,"async def await_all():
+    '''
+    Simple utility function that drains all pending tasks
+    '''
+    tasks = asyncio.Task.all_tasks()
+    for task in tasks:
+        try:
+            await task
+        except RuntimeError as e:
+            # Python 3.5.x: Error if attempting to await parent task
+            if 'Task cannot await on itself' not in str(e):
+                raise e
+        except AssertionError as e:
+            # Python 3.6.x: Error if attempting to await parent task
+            if 'yield from wasn\'t used with future' not in str(e):
+                raise e",python,"async def await_all():
+    '''
+    Simple utility function that drains all pending tasks
+    '''
+    tasks = asyncio.Task.all_tasks()
+    for task in tasks:
+        try:
+            await task
+        except RuntimeError as e:
+            # Python 3.5.x: Error if attempting to await parent task
+            if 'Task cannot await on itself' not in str(e):
+                raise e
+        except AssertionError as e:
+            # Python 3.6.x: Error if attempting to await parent task
+            if 'yield from wasn\'t used with future' not in str(e):
+                raise e","['async' 'def' 'await_all' '(' ')' ':' 'tasks' '=' 'asyncio' '.' 'Task'
+ '.' 'all_tasks' '(' ')' 'for' 'task' 'in' 'tasks' ':' 'try' ':' 'await'
+ 'task' 'except' 'RuntimeError' 'as' 'e' ':'
+ '# Python 3.5.x: Error if attempting to await parent task' 'if'
+ ""'Task cannot await on itself'"" 'not' 'in' 'str' '(' 'e' ')' ':' 'raise'
+ 'e' 'except' 'AssertionError' 'as' 'e' ':'
+ '# Python 3.6.x: Error if attempting to await parent task' 'if'
+ ""'yield from wasn\\'t used with future'"" 'not' 'in' 'str' '(' 'e' ')' ':'
+ 'raise' 'e']",Simple utility function that drains all pending tasks,['Simple' 'utility' 'function' 'that' 'drains' 'all' 'pending' 'tasks'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/utils/asynctools.py#L7-L22
+michaelpb/omnic,omnic/utils/asynctools.py,coerce_to_synchronous,"def coerce_to_synchronous(func):
+    '''
+    Given a function that might be async, wrap it in an explicit loop so it can
+    be run in a synchronous context.
+    '''
+    if inspect.iscoroutinefunction(func):
+        @functools.wraps(func)
+        def sync_wrapper(*args, **kwargs):
+            loop = asyncio.get_event_loop()
+            try:
+                loop.run_until_complete(func(*args, **kwargs))
+            finally:
+                loop.close()
+        return sync_wrapper
+    return func",python,"def coerce_to_synchronous(func):
+    '''
+    Given a function that might be async, wrap it in an explicit loop so it can
+    be run in a synchronous context.
+    '''
+    if inspect.iscoroutinefunction(func):
+        @functools.wraps(func)
+        def sync_wrapper(*args, **kwargs):
+            loop = asyncio.get_event_loop()
+            try:
+                loop.run_until_complete(func(*args, **kwargs))
+            finally:
+                loop.close()
+        return sync_wrapper
+    return func","['def' 'coerce_to_synchronous' '(' 'func' ')' ':' 'if' 'inspect' '.'
+ 'iscoroutinefunction' '(' 'func' ')' ':' '@' 'functools' '.' 'wraps' '('
+ 'func' ')' 'def' 'sync_wrapper' '(' '*' 'args' ',' '*' '*' 'kwargs' ')'
+ ':' 'loop' '=' 'asyncio' '.' 'get_event_loop' '(' ')' 'try' ':' 'loop'
+ '.' 'run_until_complete' '(' 'func' '(' '*' 'args' ',' '*' '*' 'kwargs'
+ ')' ')' 'finally' ':' 'loop' '.' 'close' '(' ')' 'return' 'sync_wrapper'
+ 'return' 'func']","Given a function that might be async, wrap it in an explicit loop so it can
+    be run in a synchronous context.","['Given' 'a' 'function' 'that' 'might' 'be' 'async' 'wrap' 'it' 'in' 'an'
+ 'explicit' 'loop' 'so' 'it' 'can' 'be' 'run' 'in' 'a' 'synchronous'
+ 'context' '.']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/utils/asynctools.py#L25-L39
+michaelpb/omnic,omnic/web/server.py,WebServer.route_path,"def route_path(self, path):
+        '''
+        Hacky function that's presently only useful for testing, gets the view
+        that handles the given path.
+        Later may be incorporated into the URL routing
+        '''
+        path = path.strip('/')
+        name, _, subpath = path.partition('/')
+        for service in singletons.settings.load_all('SERVICES'):
+            if service.SERVICE_NAME == name:  # Found service!
+                break
+        else:
+            return [], None  # found no service
+
+        for partial_url, view in service.urls.items():
+            partial_url = partial_url.strip('/')
+            if isinstance(view, str):
+                view = getattr(service, view)
+            regexp = re.sub(r'<[^>]+>', r'([^/]+)', partial_url)
+            matches = re.findall('^%s$' % regexp, subpath)
+            if matches:
+                if '(' not in regexp:
+                    matches = []
+                return matches, view
+
+        return [], None",python,"def route_path(self, path):
+        '''
+        Hacky function that's presently only useful for testing, gets the view
+        that handles the given path.
+        Later may be incorporated into the URL routing
+        '''
+        path = path.strip('/')
+        name, _, subpath = path.partition('/')
+        for service in singletons.settings.load_all('SERVICES'):
+            if service.SERVICE_NAME == name:  # Found service!
+                break
+        else:
+            return [], None  # found no service
+
+        for partial_url, view in service.urls.items():
+            partial_url = partial_url.strip('/')
+            if isinstance(view, str):
+                view = getattr(service, view)
+            regexp = re.sub(r'<[^>]+>', r'([^/]+)', partial_url)
+            matches = re.findall('^%s$' % regexp, subpath)
+            if matches:
+                if '(' not in regexp:
+                    matches = []
+                return matches, view
+
+        return [], None","['def' 'route_path' '(' 'self' ',' 'path' ')' ':' 'path' '=' 'path' '.'
+ 'strip' '(' ""'/'"" ')' 'name' ',' '_' ',' 'subpath' '=' 'path' '.'
+ 'partition' '(' ""'/'"" ')' 'for' 'service' 'in' 'singletons' '.'
+ 'settings' '.' 'load_all' '(' ""'SERVICES'"" ')' ':' 'if' 'service' '.'
+ 'SERVICE_NAME' '==' 'name' ':' '# Found service!' 'break' 'else' ':'
+ 'return' '[' ']' ',' 'None' '# found no service' 'for' 'partial_url' ','
+ 'view' 'in' 'service' '.' 'urls' '.' 'items' '(' ')' ':' 'partial_url'
+ '=' 'partial_url' '.' 'strip' '(' ""'/'"" ')' 'if' 'isinstance' '(' 'view'
+ ',' 'str' ')' ':' 'view' '=' 'getattr' '(' 'service' ',' 'view' ')'
+ 'regexp' '=' 're' '.' 'sub' '(' ""r'<[^>]+>'"" ',' ""r'([^/]+)'"" ','
+ 'partial_url' ')' 'matches' '=' 're' '.' 'findall' '(' ""'^%s$'"" '%'
+ 'regexp' ',' 'subpath' ')' 'if' 'matches' ':' 'if' ""'('"" 'not' 'in'
+ 'regexp' ':' 'matches' '=' '[' ']' 'return' 'matches' ',' 'view' 'return'
+ '[' ']' ',' 'None']","Hacky function that's presently only useful for testing, gets the view
+        that handles the given path.
+        Later may be incorporated into the URL routing","['Hacky' 'function' 'that' 's' 'presently' 'only' 'useful' 'for' 'testing'
+ 'gets' 'the' 'view' 'that' 'handles' 'the' 'given' 'path' '.' 'Later'
+ 'may' 'be' 'incorporated' 'into' 'the' 'URL' 'routing']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/web/server.py#L50-L75
+michaelpb/omnic,omnic/utils/iters.py,pair_looper,"def pair_looper(iterator):
+    '''
+    Loop through iterator yielding items in adjacent pairs
+    '''
+    left = START
+    for item in iterator:
+        if left is not START:
+            yield (left, item)
+        left = item",python,"def pair_looper(iterator):
+    '''
+    Loop through iterator yielding items in adjacent pairs
+    '''
+    left = START
+    for item in iterator:
+        if left is not START:
+            yield (left, item)
+        left = item","['def' 'pair_looper' '(' 'iterator' ')' ':' 'left' '=' 'START' 'for'
+ 'item' 'in' 'iterator' ':' 'if' 'left' 'is' 'not' 'START' ':' 'yield' '('
+ 'left' ',' 'item' ')' 'left' '=' 'item']",Loop through iterator yielding items in adjacent pairs,['Loop' 'through' 'iterator' 'yielding' 'items' 'in' 'adjacent' 'pairs'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/utils/iters.py#L6-L14
+michaelpb/omnic,omnic/web/shortcuts.py,reverse_media_url,"def reverse_media_url(target_type, url_string, *args, **kwargs):
+    '''
+    Given a target type and an resource URL, generates a valid URL to this via
+    '''
+    args_str = '<%s>' % '><'.join(args)
+    kwargs_str = '<%s>' % '><'.join('%s:%s' % pair for pair in kwargs.items())
+    url_str = ''.join([url_string, args_str, kwargs_str])
+    normalized_url = str(ResourceURL(url_str))
+
+    query_tuples = []
+
+    if singletons.settings.SECURITY and 'Sha1' in singletons.settings.SECURITY:
+        secret = singletons.settings.HMAC_SECRET
+        digest = get_hmac_sha1_digest(secret, normalized_url, target_type)
+        query_tuples.append(('digest', digest))
+
+    # Add in URL as last querystring argument
+    query_tuples.append(('url', normalized_url))
+
+    querystring = urlencode(query_tuples)
+    scheme = singletons.settings.EXTERNAL_SCHEME
+    host = singletons.settings.EXTERNAL_HOST
+    port = singletons.settings.EXTERNAL_PORT
+    if not host:
+        host = singletons.settings.HOST
+    if not port:
+        port = singletons.settings.PORT
+
+    port_suffix = ':%s' % port if port != 80 else ''
+
+    typestring_normalized = str(TypeString(target_type))
+    return '%s://%s%s/media/%s/?%s' % (
+        scheme,
+        host,
+        port_suffix,
+        typestring_normalized,
+        querystring,
+    )",python,"def reverse_media_url(target_type, url_string, *args, **kwargs):
+    '''
+    Given a target type and an resource URL, generates a valid URL to this via
+    '''
+    args_str = '<%s>' % '><'.join(args)
+    kwargs_str = '<%s>' % '><'.join('%s:%s' % pair for pair in kwargs.items())
+    url_str = ''.join([url_string, args_str, kwargs_str])
+    normalized_url = str(ResourceURL(url_str))
+
+    query_tuples = []
+
+    if singletons.settings.SECURITY and 'Sha1' in singletons.settings.SECURITY:
+        secret = singletons.settings.HMAC_SECRET
+        digest = get_hmac_sha1_digest(secret, normalized_url, target_type)
+        query_tuples.append(('digest', digest))
+
+    # Add in URL as last querystring argument
+    query_tuples.append(('url', normalized_url))
+
+    querystring = urlencode(query_tuples)
+    scheme = singletons.settings.EXTERNAL_SCHEME
+    host = singletons.settings.EXTERNAL_HOST
+    port = singletons.settings.EXTERNAL_PORT
+    if not host:
+        host = singletons.settings.HOST
+    if not port:
+        port = singletons.settings.PORT
+
+    port_suffix = ':%s' % port if port != 80 else ''
+
+    typestring_normalized = str(TypeString(target_type))
+    return '%s://%s%s/media/%s/?%s' % (
+        scheme,
+        host,
+        port_suffix,
+        typestring_normalized,
+        querystring,
+    )","['def' 'reverse_media_url' '(' 'target_type' ',' 'url_string' ',' '*'
+ 'args' ',' '*' '*' 'kwargs' ')' ':' 'args_str' '=' ""'<%s>'"" '%' ""'><'""
+ '.' 'join' '(' 'args' ')' 'kwargs_str' '=' ""'<%s>'"" '%' ""'><'"" '.' 'join'
+ '(' ""'%s:%s'"" '%' 'pair' 'for' 'pair' 'in' 'kwargs' '.' 'items' '(' ')'
+ ')' 'url_str' '=' ""''"" '.' 'join' '(' '[' 'url_string' ',' 'args_str' ','
+ 'kwargs_str' ']' ')' 'normalized_url' '=' 'str' '(' 'ResourceURL' '('
+ 'url_str' ')' ')' 'query_tuples' '=' '[' ']' 'if' 'singletons' '.'
+ 'settings' '.' 'SECURITY' 'and' ""'Sha1'"" 'in' 'singletons' '.' 'settings'
+ '.' 'SECURITY' ':' 'secret' '=' 'singletons' '.' 'settings' '.'
+ 'HMAC_SECRET' 'digest' '=' 'get_hmac_sha1_digest' '(' 'secret' ','
+ 'normalized_url' ',' 'target_type' ')' 'query_tuples' '.' 'append' '('
+ '(' ""'digest'"" ',' 'digest' ')' ')'
+ '# Add in URL as last querystring argument' 'query_tuples' '.' 'append'
+ '(' '(' ""'url'"" ',' 'normalized_url' ')' ')' 'querystring' '='
+ 'urlencode' '(' 'query_tuples' ')' 'scheme' '=' 'singletons' '.'
+ 'settings' '.' 'EXTERNAL_SCHEME' 'host' '=' 'singletons' '.' 'settings'
+ '.' 'EXTERNAL_HOST' 'port' '=' 'singletons' '.' 'settings' '.'
+ 'EXTERNAL_PORT' 'if' 'not' 'host' ':' 'host' '=' 'singletons' '.'
+ 'settings' '.' 'HOST' 'if' 'not' 'port' ':' 'port' '=' 'singletons' '.'
+ 'settings' '.' 'PORT' 'port_suffix' '=' ""':%s'"" '%' 'port' 'if' 'port'
+ '!=' '80' 'else' ""''"" 'typestring_normalized' '=' 'str' '(' 'TypeString'
+ '(' 'target_type' ')' ')' 'return' ""'%s://%s%s/media/%s/?%s'"" '%' '('
+ 'scheme' ',' 'host' ',' 'port_suffix' ',' 'typestring_normalized' ','
+ 'querystring' ',' ')']","Given a target type and an resource URL, generates a valid URL to this via","['Given' 'a' 'target' 'type' 'and' 'an' 'resource' 'URL' 'generates' 'a'
+ 'valid' 'URL' 'to' 'this' 'via']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/web/shortcuts.py#L9-L46
+michaelpb/omnic,omnic/worker/manager.py,WorkerManager.enqueue_sync,"def enqueue_sync(self, func, *func_args):
+        '''
+        Enqueue an arbitrary synchronous function.
+
+        Deprecated: Use async version instead
+        '''
+        worker = self.pick_sticky(0)  # just pick first always
+        args = (func,) + func_args
+        coro = worker.enqueue(enums.Task.FUNC, args)
+        asyncio.ensure_future(coro)",python,"def enqueue_sync(self, func, *func_args):
+        '''
+        Enqueue an arbitrary synchronous function.
+
+        Deprecated: Use async version instead
+        '''
+        worker = self.pick_sticky(0)  # just pick first always
+        args = (func,) + func_args
+        coro = worker.enqueue(enums.Task.FUNC, args)
+        asyncio.ensure_future(coro)","['def' 'enqueue_sync' '(' 'self' ',' 'func' ',' '*' 'func_args' ')' ':'
+ 'worker' '=' 'self' '.' 'pick_sticky' '(' '0' ')'
+ '# just pick first always' 'args' '=' '(' 'func' ',' ')' '+' 'func_args'
+ 'coro' '=' 'worker' '.' 'enqueue' '(' 'enums' '.' 'Task' '.' 'FUNC' ','
+ 'args' ')' 'asyncio' '.' 'ensure_future' '(' 'coro' ')']","Enqueue an arbitrary synchronous function.
+
+        Deprecated: Use async version instead",['Enqueue' 'an' 'arbitrary' 'synchronous' 'function' '.'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/worker/manager.py#L32-L41
+michaelpb/omnic,omnic/worker/manager.py,WorkerManager.async_enqueue_sync,"async def async_enqueue_sync(self, func, *func_args):
+        '''
+        Enqueue an arbitrary synchronous function.
+        '''
+        worker = self.pick_sticky(0)  # just pick first always
+        args = (func,) + func_args
+        await worker.enqueue(enums.Task.FUNC, args)",python,"async def async_enqueue_sync(self, func, *func_args):
+        '''
+        Enqueue an arbitrary synchronous function.
+        '''
+        worker = self.pick_sticky(0)  # just pick first always
+        args = (func,) + func_args
+        await worker.enqueue(enums.Task.FUNC, args)","['async' 'def' 'async_enqueue_sync' '(' 'self' ',' 'func' ',' '*'
+ 'func_args' ')' ':' 'worker' '=' 'self' '.' 'pick_sticky' '(' '0' ')'
+ '# just pick first always' 'args' '=' '(' 'func' ',' ')' '+' 'func_args'
+ 'await' 'worker' '.' 'enqueue' '(' 'enums' '.' 'Task' '.' 'FUNC' ','
+ 'args' ')']",Enqueue an arbitrary synchronous function.,['Enqueue' 'an' 'arbitrary' 'synchronous' 'function' '.'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/worker/manager.py#L43-L49
+michaelpb/omnic,omnic/worker/manager.py,WorkerManager.enqueue_download,"def enqueue_download(self, resource):
+        '''
+        Enqueue the download of the given foreign resource.
+
+        Deprecated: Use async version instead
+        '''
+        worker = self.pick_sticky(resource.url_string)
+        coro = worker.enqueue(enums.Task.DOWNLOAD, (resource,))
+        asyncio.ensure_future(coro)",python,"def enqueue_download(self, resource):
+        '''
+        Enqueue the download of the given foreign resource.
+
+        Deprecated: Use async version instead
+        '''
+        worker = self.pick_sticky(resource.url_string)
+        coro = worker.enqueue(enums.Task.DOWNLOAD, (resource,))
+        asyncio.ensure_future(coro)","['def' 'enqueue_download' '(' 'self' ',' 'resource' ')' ':' 'worker' '='
+ 'self' '.' 'pick_sticky' '(' 'resource' '.' 'url_string' ')' 'coro' '='
+ 'worker' '.' 'enqueue' '(' 'enums' '.' 'Task' '.' 'DOWNLOAD' ',' '('
+ 'resource' ',' ')' ')' 'asyncio' '.' 'ensure_future' '(' 'coro' ')']","Enqueue the download of the given foreign resource.
+
+        Deprecated: Use async version instead",['Enqueue' 'the' 'download' 'of' 'the' 'given' 'foreign' 'resource' '.'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/worker/manager.py#L51-L59
+michaelpb/omnic,omnic/worker/manager.py,WorkerManager.async_enqueue_download,"async def async_enqueue_download(self, resource):
+        '''
+        Enqueue the download of the given foreign resource.
+        '''
+        worker = self.pick_sticky(resource.url_string)
+        await worker.enqueue(enums.Task.DOWNLOAD, (resource,))",python,"async def async_enqueue_download(self, resource):
+        '''
+        Enqueue the download of the given foreign resource.
+        '''
+        worker = self.pick_sticky(resource.url_string)
+        await worker.enqueue(enums.Task.DOWNLOAD, (resource,))","['async' 'def' 'async_enqueue_download' '(' 'self' ',' 'resource' ')' ':'
+ 'worker' '=' 'self' '.' 'pick_sticky' '(' 'resource' '.' 'url_string' ')'
+ 'await' 'worker' '.' 'enqueue' '(' 'enums' '.' 'Task' '.' 'DOWNLOAD' ','
+ '(' 'resource' ',' ')' ')']",Enqueue the download of the given foreign resource.,['Enqueue' 'the' 'download' 'of' 'the' 'given' 'foreign' 'resource' '.'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/worker/manager.py#L61-L66
+michaelpb/omnic,omnic/worker/manager.py,WorkerManager.enqueue_convert,"def enqueue_convert(self, converter, from_resource, to_resource):
+        '''
+        Enqueue use of the given converter to convert to given
+        resources.
+
+        Deprecated: Use async version instead
+        '''
+        worker = self.pick_sticky(from_resource.url_string)
+        args = (converter, from_resource, to_resource)
+        coro = worker.enqueue(enums.Task.CONVERT, args)
+        asyncio.ensure_future(coro)",python,"def enqueue_convert(self, converter, from_resource, to_resource):
+        '''
+        Enqueue use of the given converter to convert to given
+        resources.
+
+        Deprecated: Use async version instead
+        '''
+        worker = self.pick_sticky(from_resource.url_string)
+        args = (converter, from_resource, to_resource)
+        coro = worker.enqueue(enums.Task.CONVERT, args)
+        asyncio.ensure_future(coro)","['def' 'enqueue_convert' '(' 'self' ',' 'converter' ',' 'from_resource'
+ ',' 'to_resource' ')' ':' 'worker' '=' 'self' '.' 'pick_sticky' '('
+ 'from_resource' '.' 'url_string' ')' 'args' '=' '(' 'converter' ','
+ 'from_resource' ',' 'to_resource' ')' 'coro' '=' 'worker' '.' 'enqueue'
+ '(' 'enums' '.' 'Task' '.' 'CONVERT' ',' 'args' ')' 'asyncio' '.'
+ 'ensure_future' '(' 'coro' ')']","Enqueue use of the given converter to convert to given
+        resources.
+
+        Deprecated: Use async version instead","['Enqueue' 'use' 'of' 'the' 'given' 'converter' 'to' 'convert' 'to'
+ 'given' 'resources' '.']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/worker/manager.py#L68-L78
+michaelpb/omnic,omnic/worker/manager.py,WorkerManager.async_enqueue_convert,"async def async_enqueue_convert(self, converter, from_, to):
+        '''
+        Enqueue use of the given converter to convert to given
+        from and to resources.
+        '''
+        worker = self.pick_sticky(from_.url_string)
+        args = (converter, from_, to)
+        await worker.enqueue(enums.Task.CONVERT, args)",python,"async def async_enqueue_convert(self, converter, from_, to):
+        '''
+        Enqueue use of the given converter to convert to given
+        from and to resources.
+        '''
+        worker = self.pick_sticky(from_.url_string)
+        args = (converter, from_, to)
+        await worker.enqueue(enums.Task.CONVERT, args)","['async' 'def' 'async_enqueue_convert' '(' 'self' ',' 'converter' ','
+ 'from_' ',' 'to' ')' ':' 'worker' '=' 'self' '.' 'pick_sticky' '('
+ 'from_' '.' 'url_string' ')' 'args' '=' '(' 'converter' ',' 'from_' ','
+ 'to' ')' 'await' 'worker' '.' 'enqueue' '(' 'enums' '.' 'Task' '.'
+ 'CONVERT' ',' 'args' ')']","Enqueue use of the given converter to convert to given
+        from and to resources.","['Enqueue' 'use' 'of' 'the' 'given' 'converter' 'to' 'convert' 'to'
+ 'given' 'from' 'and' 'to' 'resources' '.']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/worker/manager.py#L80-L87
+michaelpb/omnic,omnic/worker/manager.py,WorkerManager.async_enqueue_multiconvert,"async def async_enqueue_multiconvert(self, url_string, to_type):
+        '''
+        Enqueue a multi-step conversion process, from the given URL string
+        (which is assumed to have been downloaded / resolved)
+        '''
+        worker = self.pick_sticky(url_string)
+        args = (url_string, to_type)
+        await worker.enqueue(enums.Task.MULTICONVERT, args)",python,"async def async_enqueue_multiconvert(self, url_string, to_type):
+        '''
+        Enqueue a multi-step conversion process, from the given URL string
+        (which is assumed to have been downloaded / resolved)
+        '''
+        worker = self.pick_sticky(url_string)
+        args = (url_string, to_type)
+        await worker.enqueue(enums.Task.MULTICONVERT, args)","['async' 'def' 'async_enqueue_multiconvert' '(' 'self' ',' 'url_string'
+ ',' 'to_type' ')' ':' 'worker' '=' 'self' '.' 'pick_sticky' '('
+ 'url_string' ')' 'args' '=' '(' 'url_string' ',' 'to_type' ')' 'await'
+ 'worker' '.' 'enqueue' '(' 'enums' '.' 'Task' '.' 'MULTICONVERT' ','
+ 'args' ')']","Enqueue a multi-step conversion process, from the given URL string
+        (which is assumed to have been downloaded / resolved)","['Enqueue' 'a' 'multi' '-' 'step' 'conversion' 'process' 'from' 'the'
+ 'given' 'URL' 'string' '(' 'which' 'is' 'assumed' 'to' 'have' 'been'
+ 'downloaded' '/' 'resolved' ')']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/worker/manager.py#L89-L96
+michaelpb/omnic,omnic/web/viewer.py,ViewerManager.get_assets,"def get_assets(self):
+        '''
+        Return a flat list of absolute paths to all assets required by this
+        viewer
+        '''
+        return sum([
+            [self.prefix_asset(viewer, relpath) for relpath in viewer.assets]
+            for viewer in self.viewers
+        ], [])",python,"def get_assets(self):
+        '''
+        Return a flat list of absolute paths to all assets required by this
+        viewer
+        '''
+        return sum([
+            [self.prefix_asset(viewer, relpath) for relpath in viewer.assets]
+            for viewer in self.viewers
+        ], [])","['def' 'get_assets' '(' 'self' ')' ':' 'return' 'sum' '(' '[' '[' 'self'
+ '.' 'prefix_asset' '(' 'viewer' ',' 'relpath' ')' 'for' 'relpath' 'in'
+ 'viewer' '.' 'assets' ']' 'for' 'viewer' 'in' 'self' '.' 'viewers' ']'
+ ',' '[' ']' ')']","Return a flat list of absolute paths to all assets required by this
+        viewer","['Return' 'a' 'flat' 'list' 'of' 'absolute' 'paths' 'to' 'all' 'assets'
+ 'required' 'by' 'this' 'viewer']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/web/viewer.py#L20-L28
+michaelpb/omnic,omnic/web/viewer.py,ViewerManager.get_resource,"def get_resource(self):
+        '''
+        Returns a BytesResource to build the viewers JavaScript
+        '''
+        # Basename could be used for controlling caching
+        # basename = 'viewers_%s' % settings.get_cache_string()
+        node_packages = self.get_node_packages()
+        # sort_keys is essential to ensure resulting string is
+        # deterministic (and thus hashable)
+        viewers_data_str = json.dumps(node_packages, sort_keys=True)
+        viewers_data = viewers_data_str.encode('utf8')
+        viewers_resource = ForeignBytesResource(
+            viewers_data,
+            extension=VIEWER_EXT,
+            # basename=basename,
+        )
+        return viewers_resource",python,"def get_resource(self):
+        '''
+        Returns a BytesResource to build the viewers JavaScript
+        '''
+        # Basename could be used for controlling caching
+        # basename = 'viewers_%s' % settings.get_cache_string()
+        node_packages = self.get_node_packages()
+        # sort_keys is essential to ensure resulting string is
+        # deterministic (and thus hashable)
+        viewers_data_str = json.dumps(node_packages, sort_keys=True)
+        viewers_data = viewers_data_str.encode('utf8')
+        viewers_resource = ForeignBytesResource(
+            viewers_data,
+            extension=VIEWER_EXT,
+            # basename=basename,
+        )
+        return viewers_resource","['def' 'get_resource' '(' 'self' ')' ':'
+ '# Basename could be used for controlling caching'
+ ""# basename = 'viewers_%s' % settings.get_cache_string()"" 'node_packages'
+ '=' 'self' '.' 'get_node_packages' '(' ')'
+ '# sort_keys is essential to ensure resulting string is'
+ '# deterministic (and thus hashable)' 'viewers_data_str' '=' 'json' '.'
+ 'dumps' '(' 'node_packages' ',' 'sort_keys' '=' 'True' ')' 'viewers_data'
+ '=' 'viewers_data_str' '.' 'encode' '(' ""'utf8'"" ')' 'viewers_resource'
+ '=' 'ForeignBytesResource' '(' 'viewers_data' ',' 'extension' '='
+ 'VIEWER_EXT' ',' '# basename=basename,' ')' 'return' 'viewers_resource']",Returns a BytesResource to build the viewers JavaScript,['Returns' 'a' 'BytesResource' 'to' 'build' 'the' 'viewers' 'JavaScript'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/web/viewer.py#L40-L56
+michaelpb/omnic,omnic/utils/security.py,get_hmac_sha1_digest,"def get_hmac_sha1_digest(secret, resource_url, target_type, api_key=None):
+    '''
+    Utilize hmac module to hash a secret, a string specifying a resource URL,
+    and a string specifying a target type into a (string) hex digest.
+    '''
+    # Normalize and sanitize input resource URL and target type, and then
+    # convert to bytes
+    target_type_bytes = str(TypeString(target_type)).encode('utf8')
+    resource_url_bytes = str(ResourceURL(resource_url)).encode('utf8')
+
+    # Create new hmac digest, optionally including an optional public api key
+    hm = hmac.new(secret.encode('utf8'), digestmod=hashlib.sha1)
+    if api_key:
+        hm.update(api_key.encode('utf8'))
+    hm.update(target_type_bytes)
+    hm.update(resource_url_bytes)
+    return hm.hexdigest()",python,"def get_hmac_sha1_digest(secret, resource_url, target_type, api_key=None):
+    '''
+    Utilize hmac module to hash a secret, a string specifying a resource URL,
+    and a string specifying a target type into a (string) hex digest.
+    '''
+    # Normalize and sanitize input resource URL and target type, and then
+    # convert to bytes
+    target_type_bytes = str(TypeString(target_type)).encode('utf8')
+    resource_url_bytes = str(ResourceURL(resource_url)).encode('utf8')
+
+    # Create new hmac digest, optionally including an optional public api key
+    hm = hmac.new(secret.encode('utf8'), digestmod=hashlib.sha1)
+    if api_key:
+        hm.update(api_key.encode('utf8'))
+    hm.update(target_type_bytes)
+    hm.update(resource_url_bytes)
+    return hm.hexdigest()","['def' 'get_hmac_sha1_digest' '(' 'secret' ',' 'resource_url' ','
+ 'target_type' ',' 'api_key' '=' 'None' ')' ':'
+ '# Normalize and sanitize input resource URL and target type, and then'
+ '# convert to bytes' 'target_type_bytes' '=' 'str' '(' 'TypeString' '('
+ 'target_type' ')' ')' '.' 'encode' '(' ""'utf8'"" ')' 'resource_url_bytes'
+ '=' 'str' '(' 'ResourceURL' '(' 'resource_url' ')' ')' '.' 'encode' '('
+ ""'utf8'"" ')'
+ '# Create new hmac digest, optionally including an optional public api key'
+ 'hm' '=' 'hmac' '.' 'new' '(' 'secret' '.' 'encode' '(' ""'utf8'"" ')' ','
+ 'digestmod' '=' 'hashlib' '.' 'sha1' ')' 'if' 'api_key' ':' 'hm' '.'
+ 'update' '(' 'api_key' '.' 'encode' '(' ""'utf8'"" ')' ')' 'hm' '.'
+ 'update' '(' 'target_type_bytes' ')' 'hm' '.' 'update' '('
+ 'resource_url_bytes' ')' 'return' 'hm' '.' 'hexdigest' '(' ')']","Utilize hmac module to hash a secret, a string specifying a resource URL,
+    and a string specifying a target type into a (string) hex digest.","['Utilize' 'hmac' 'module' 'to' 'hash' 'a' 'secret' 'a' 'string'
+ 'specifying' 'a' 'resource' 'URL' 'and' 'a' 'string' 'specifying' 'a'
+ 'target' 'type' 'into' 'a' '(' 'string' ')' 'hex' 'digest' '.']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/utils/security.py#L8-L24
+michaelpb/omnic,omnic/cli/commands.py,_clear_cache,"def _clear_cache(url, ts=None):
+    '''
+    Helper function used by precache and clearcache that clears the cache
+    of a given URL and type
+    '''
+    if ts is None:
+        # Clears an entire ForeignResource cache
+        res = ForeignResource(url)
+        if not os.path.exists(res.cache_path_base):
+            cli.printerr('%s is not cached (looked at %s)'
+                         % (url, res.cache_path_base))
+            return
+        cli.print('%s: clearing ALL at %s'
+                  % (url, res.cache_path_base))
+        res.cache_remove_all()
+    else:
+        # Clears an entire ForeignResource cache
+        res = TypedResource(url, ts)
+        if not res.cache_exists():
+            cli.printerr('%s is not cached for type %s (looked at %s)'
+                         % (url, str(ts), res.cache_path))
+            return
+        cli.print('%s: clearing ""%s"" at %s'
+                  % (url, str(ts), res.cache_path))
+        if os.path.isdir(res.cache_path):
+            res.cache_remove_as_dir()
+        else:
+            res.cache_remove()",python,"def _clear_cache(url, ts=None):
+    '''
+    Helper function used by precache and clearcache that clears the cache
+    of a given URL and type
+    '''
+    if ts is None:
+        # Clears an entire ForeignResource cache
+        res = ForeignResource(url)
+        if not os.path.exists(res.cache_path_base):
+            cli.printerr('%s is not cached (looked at %s)'
+                         % (url, res.cache_path_base))
+            return
+        cli.print('%s: clearing ALL at %s'
+                  % (url, res.cache_path_base))
+        res.cache_remove_all()
+    else:
+        # Clears an entire ForeignResource cache
+        res = TypedResource(url, ts)
+        if not res.cache_exists():
+            cli.printerr('%s is not cached for type %s (looked at %s)'
+                         % (url, str(ts), res.cache_path))
+            return
+        cli.print('%s: clearing ""%s"" at %s'
+                  % (url, str(ts), res.cache_path))
+        if os.path.isdir(res.cache_path):
+            res.cache_remove_as_dir()
+        else:
+            res.cache_remove()","['def' '_clear_cache' '(' 'url' ',' 'ts' '=' 'None' ')' ':' 'if' 'ts' 'is'
+ 'None' ':' '# Clears an entire ForeignResource cache' 'res' '='
+ 'ForeignResource' '(' 'url' ')' 'if' 'not' 'os' '.' 'path' '.' 'exists'
+ '(' 'res' '.' 'cache_path_base' ')' ':' 'cli' '.' 'printerr' '('
+ ""'%s is not cached (looked at %s)'"" '%' '(' 'url' ',' 'res' '.'
+ 'cache_path_base' ')' ')' 'return' 'cli' '.' 'print' '('
+ ""'%s: clearing ALL at %s'"" '%' '(' 'url' ',' 'res' '.' 'cache_path_base'
+ ')' ')' 'res' '.' 'cache_remove_all' '(' ')' 'else' ':'
+ '# Clears an entire ForeignResource cache' 'res' '=' 'TypedResource' '('
+ 'url' ',' 'ts' ')' 'if' 'not' 'res' '.' 'cache_exists' '(' ')' ':' 'cli'
+ '.' 'printerr' '(' ""'%s is not cached for type %s (looked at %s)'"" '%'
+ '(' 'url' ',' 'str' '(' 'ts' ')' ',' 'res' '.' 'cache_path' ')' ')'
+ 'return' 'cli' '.' 'print' '(' '\'%s: clearing ""%s"" at %s\'' '%' '('
+ 'url' ',' 'str' '(' 'ts' ')' ',' 'res' '.' 'cache_path' ')' ')' 'if' 'os'
+ '.' 'path' '.' 'isdir' '(' 'res' '.' 'cache_path' ')' ':' 'res' '.'
+ 'cache_remove_as_dir' '(' ')' 'else' ':' 'res' '.' 'cache_remove' '(' ')']","Helper function used by precache and clearcache that clears the cache
+    of a given URL and type","['Helper' 'function' 'used' 'by' 'precache' 'and' 'clearcache' 'that'
+ 'clears' 'the' 'cache' 'of' 'a' 'given' 'URL' 'and' 'type']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/cli/commands.py#L80-L107
+michaelpb/omnic,omnic/cli/commands.py,_precache,"async def _precache(url, to_type, force=False):
+    '''
+    Helper function used by precache and precache-named which does the
+    actual precaching
+    '''
+    if force:
+        cli.print('%s: force clearing' % url)
+        _clear_cache(url)
+    cli.print('%s: precaching ""%s""' % (url, to_type))
+    with autodrain_worker():
+        await singletons.workers.async_enqueue_multiconvert(url, to_type)
+    result = TypedResource(url, TypeString(to_type))
+    cli.print('%s: %s precached at: %s' % (url, to_type, result.cache_path))",python,"async def _precache(url, to_type, force=False):
+    '''
+    Helper function used by precache and precache-named which does the
+    actual precaching
+    '''
+    if force:
+        cli.print('%s: force clearing' % url)
+        _clear_cache(url)
+    cli.print('%s: precaching ""%s""' % (url, to_type))
+    with autodrain_worker():
+        await singletons.workers.async_enqueue_multiconvert(url, to_type)
+    result = TypedResource(url, TypeString(to_type))
+    cli.print('%s: %s precached at: %s' % (url, to_type, result.cache_path))","['async' 'def' '_precache' '(' 'url' ',' 'to_type' ',' 'force' '=' 'False'
+ ')' ':' 'if' 'force' ':' 'cli' '.' 'print' '(' ""'%s: force clearing'"" '%'
+ 'url' ')' '_clear_cache' '(' 'url' ')' 'cli' '.' 'print' '('
+ '\'%s: precaching ""%s""\'' '%' '(' 'url' ',' 'to_type' ')' ')' 'with'
+ 'autodrain_worker' '(' ')' ':' 'await' 'singletons' '.' 'workers' '.'
+ 'async_enqueue_multiconvert' '(' 'url' ',' 'to_type' ')' 'result' '='
+ 'TypedResource' '(' 'url' ',' 'TypeString' '(' 'to_type' ')' ')' 'cli'
+ '.' 'print' '(' ""'%s: %s precached at: %s'"" '%' '(' 'url' ',' 'to_type'
+ ',' 'result' '.' 'cache_path' ')' ')']","Helper function used by precache and precache-named which does the
+    actual precaching","['Helper' 'function' 'used' 'by' 'precache' 'and' 'precache' '-' 'named'
+ 'which' 'does' 'the' 'actual' 'precaching']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/cli/commands.py#L110-L122
+michaelpb/omnic,omnic/utils/graph.py,DirectedGraph.get_all_paths_from,"def get_all_paths_from(self, start, seen=None):
+        '''
+        Return a list of all paths to all nodes from a given start node
+        '''
+        if seen is None:
+            seen = frozenset()
+        results = [(0, (start, ))]
+        if start in seen or start not in self.edges:
+            return results
+        seen = seen | frozenset((start,))
+        for node, edge_weight in self.edges[start].items():
+            for subpath_weight, subpath in self.get_all_paths_from(node, seen):
+                total_weight = edge_weight + subpath_weight
+                full_path = (start, ) + subpath
+                results.append((total_weight, full_path))
+        return tuple(results)",python,"def get_all_paths_from(self, start, seen=None):
+        '''
+        Return a list of all paths to all nodes from a given start node
+        '''
+        if seen is None:
+            seen = frozenset()
+        results = [(0, (start, ))]
+        if start in seen or start not in self.edges:
+            return results
+        seen = seen | frozenset((start,))
+        for node, edge_weight in self.edges[start].items():
+            for subpath_weight, subpath in self.get_all_paths_from(node, seen):
+                total_weight = edge_weight + subpath_weight
+                full_path = (start, ) + subpath
+                results.append((total_weight, full_path))
+        return tuple(results)","['def' 'get_all_paths_from' '(' 'self' ',' 'start' ',' 'seen' '=' 'None'
+ ')' ':' 'if' 'seen' 'is' 'None' ':' 'seen' '=' 'frozenset' '(' ')'
+ 'results' '=' '[' '(' '0' ',' '(' 'start' ',' ')' ')' ']' 'if' 'start'
+ 'in' 'seen' 'or' 'start' 'not' 'in' 'self' '.' 'edges' ':' 'return'
+ 'results' 'seen' '=' 'seen' '|' 'frozenset' '(' '(' 'start' ',' ')' ')'
+ 'for' 'node' ',' 'edge_weight' 'in' 'self' '.' 'edges' '[' 'start' ']'
+ '.' 'items' '(' ')' ':' 'for' 'subpath_weight' ',' 'subpath' 'in' 'self'
+ '.' 'get_all_paths_from' '(' 'node' ',' 'seen' ')' ':' 'total_weight' '='
+ 'edge_weight' '+' 'subpath_weight' 'full_path' '=' '(' 'start' ',' ')'
+ '+' 'subpath' 'results' '.' 'append' '(' '(' 'total_weight' ','
+ 'full_path' ')' ')' 'return' 'tuple' '(' 'results' ')']",Return a list of all paths to all nodes from a given start node,"['Return' 'a' 'list' 'of' 'all' 'paths' 'to' 'all' 'nodes' 'from' 'a'
+ 'given' 'start' 'node']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/utils/graph.py#L46-L61
+michaelpb/omnic,omnic/types/detectors.py,DetectorManager.detect,"def detect(self, path):
+        '''
+        Guesses a TypeString from the given path
+        '''
+        typestring = UNKNOWN
+        for detector in self.detectors:
+            if typestring != UNKNOWN and not detector.can_improve(typestring):
+                continue
+            if not detector.can_detect(path):
+                continue
+            detected = detector.detect(path)
+            if detected:
+                typestring = detected
+        return typestring",python,"def detect(self, path):
+        '''
+        Guesses a TypeString from the given path
+        '''
+        typestring = UNKNOWN
+        for detector in self.detectors:
+            if typestring != UNKNOWN and not detector.can_improve(typestring):
+                continue
+            if not detector.can_detect(path):
+                continue
+            detected = detector.detect(path)
+            if detected:
+                typestring = detected
+        return typestring","['def' 'detect' '(' 'self' ',' 'path' ')' ':' 'typestring' '=' 'UNKNOWN'
+ 'for' 'detector' 'in' 'self' '.' 'detectors' ':' 'if' 'typestring' '!='
+ 'UNKNOWN' 'and' 'not' 'detector' '.' 'can_improve' '(' 'typestring' ')'
+ ':' 'continue' 'if' 'not' 'detector' '.' 'can_detect' '(' 'path' ')' ':'
+ 'continue' 'detected' '=' 'detector' '.' 'detect' '(' 'path' ')' 'if'
+ 'detected' ':' 'typestring' '=' 'detected' 'return' 'typestring']",Guesses a TypeString from the given path,['Guesses' 'a' 'TypeString' 'from' 'the' 'given' 'path'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/types/detectors.py#L26-L39
+michaelpb/omnic,omnic/utils/filesystem.py,directory_walk,"def directory_walk(source_d, destination_d):
+    '''
+    Walk a directory structure and yield full parallel source and destination
+    files, munging filenames as necessary
+    '''
+    for dirpath, dirnames, filenames in os.walk(source_d):
+        relpath = os.path.relpath(dirpath, source_d)
+        if relpath == '.':
+            relpath = ''  # remove implied '.'
+        for filename in filenames:
+            suffix = filename
+            if relpath:
+                suffix = os.path.join(relpath, filename)
+            full_source_path = os.path.join(source_d, suffix)
+            full_destination_path = os.path.join(destination_d, suffix)
+            yield full_source_path, full_destination_path",python,"def directory_walk(source_d, destination_d):
+    '''
+    Walk a directory structure and yield full parallel source and destination
+    files, munging filenames as necessary
+    '''
+    for dirpath, dirnames, filenames in os.walk(source_d):
+        relpath = os.path.relpath(dirpath, source_d)
+        if relpath == '.':
+            relpath = ''  # remove implied '.'
+        for filename in filenames:
+            suffix = filename
+            if relpath:
+                suffix = os.path.join(relpath, filename)
+            full_source_path = os.path.join(source_d, suffix)
+            full_destination_path = os.path.join(destination_d, suffix)
+            yield full_source_path, full_destination_path","['def' 'directory_walk' '(' 'source_d' ',' 'destination_d' ')' ':' 'for'
+ 'dirpath' ',' 'dirnames' ',' 'filenames' 'in' 'os' '.' 'walk' '('
+ 'source_d' ')' ':' 'relpath' '=' 'os' '.' 'path' '.' 'relpath' '('
+ 'dirpath' ',' 'source_d' ')' 'if' 'relpath' '==' ""'.'"" ':' 'relpath' '='
+ ""''"" ""# remove implied '.'"" 'for' 'filename' 'in' 'filenames' ':'
+ 'suffix' '=' 'filename' 'if' 'relpath' ':' 'suffix' '=' 'os' '.' 'path'
+ '.' 'join' '(' 'relpath' ',' 'filename' ')' 'full_source_path' '=' 'os'
+ '.' 'path' '.' 'join' '(' 'source_d' ',' 'suffix' ')'
+ 'full_destination_path' '=' 'os' '.' 'path' '.' 'join' '('
+ 'destination_d' ',' 'suffix' ')' 'yield' 'full_source_path' ','
+ 'full_destination_path']","Walk a directory structure and yield full parallel source and destination
+    files, munging filenames as necessary","['Walk' 'a' 'directory' 'structure' 'and' 'yield' 'full' 'parallel'
+ 'source' 'and' 'destination' 'files' 'munging' 'filenames' 'as'
+ 'necessary']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/utils/filesystem.py#L5-L20
+michaelpb/omnic,omnic/utils/filesystem.py,recursive_symlink_dirs,"def recursive_symlink_dirs(source_d, destination_d):
+    '''
+    Create dirs and symlink all files recursively from source_d, ignoring
+    errors (e.g. existing files)
+    '''
+    func = os.symlink
+    if os.name == 'nt':
+        # NOTE: need to verify that default perms only allow admins to create
+        # symlinks on Windows
+        func = shutil.copy
+    if os.path.exists(destination_d):
+        os.rmdir(destination_d)
+    shutil.copytree(source_d, destination_d, copy_function=func)",python,"def recursive_symlink_dirs(source_d, destination_d):
+    '''
+    Create dirs and symlink all files recursively from source_d, ignoring
+    errors (e.g. existing files)
+    '''
+    func = os.symlink
+    if os.name == 'nt':
+        # NOTE: need to verify that default perms only allow admins to create
+        # symlinks on Windows
+        func = shutil.copy
+    if os.path.exists(destination_d):
+        os.rmdir(destination_d)
+    shutil.copytree(source_d, destination_d, copy_function=func)","['def' 'recursive_symlink_dirs' '(' 'source_d' ',' 'destination_d' ')' ':'
+ 'func' '=' 'os' '.' 'symlink' 'if' 'os' '.' 'name' '==' ""'nt'"" ':'
+ '# NOTE: need to verify that default perms only allow admins to create'
+ '# symlinks on Windows' 'func' '=' 'shutil' '.' 'copy' 'if' 'os' '.'
+ 'path' '.' 'exists' '(' 'destination_d' ')' ':' 'os' '.' 'rmdir' '('
+ 'destination_d' ')' 'shutil' '.' 'copytree' '(' 'source_d' ','
+ 'destination_d' ',' 'copy_function' '=' 'func' ')']","Create dirs and symlink all files recursively from source_d, ignoring
+    errors (e.g. existing files)","['Create' 'dirs' 'and' 'symlink' 'all' 'files' 'recursively' 'from'
+ 'source_d' 'ignoring' 'errors' '(' 'e' '.' 'g' '.' 'existing' 'files' ')']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/utils/filesystem.py#L23-L35
+michaelpb/omnic,omnic/utils/filesystem.py,recursive_hardlink_dirs,"def recursive_hardlink_dirs(source_d, destination_d):
+    '''
+    Same as above, except creating hardlinks for all files
+    '''
+    func = os.link
+    if os.name == 'nt':
+        func = shutil.copy
+    if os.path.exists(destination_d):
+        os.rmdir(destination_d)
+    shutil.copytree(source_d, destination_d, copy_function=func)",python,"def recursive_hardlink_dirs(source_d, destination_d):
+    '''
+    Same as above, except creating hardlinks for all files
+    '''
+    func = os.link
+    if os.name == 'nt':
+        func = shutil.copy
+    if os.path.exists(destination_d):
+        os.rmdir(destination_d)
+    shutil.copytree(source_d, destination_d, copy_function=func)","['def' 'recursive_hardlink_dirs' '(' 'source_d' ',' 'destination_d' ')'
+ ':' 'func' '=' 'os' '.' 'link' 'if' 'os' '.' 'name' '==' ""'nt'"" ':'
+ 'func' '=' 'shutil' '.' 'copy' 'if' 'os' '.' 'path' '.' 'exists' '('
+ 'destination_d' ')' ':' 'os' '.' 'rmdir' '(' 'destination_d' ')' 'shutil'
+ '.' 'copytree' '(' 'source_d' ',' 'destination_d' ',' 'copy_function' '='
+ 'func' ')']","Same as above, except creating hardlinks for all files",['Same' 'as' 'above' 'except' 'creating' 'hardlinks' 'for' 'all' 'files'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/utils/filesystem.py#L38-L47
+michaelpb/omnic,omnic/utils/filesystem.py,flat_git_tree_to_nested,"def flat_git_tree_to_nested(flat_tree, prefix=''):
+    '''
+    Given an array in format:
+        [
+            [""100644"", ""blob"", ""ab3ce..."", ""748"", "".gitignore"" ],
+            [""100644"", ""blob"", ""ab3ce..."", ""748"", ""path/to/thing"" ],
+            ...
+        ]
+
+    Outputs in a nested format:
+        {
+            ""path"": ""/"",
+            ""type"": ""directory"",
+            ""children"": [
+                {
+                    ""type"": ""blob"",
+                    ""size"": 748,
+                    ""sha"": ""ab3ce..."",
+                    ""mode"": ""100644"",
+                },
+                ...
+            ],
+            ...
+        }
+    '''
+    root = _make_empty_dir_dict(prefix if prefix else '/')
+
+    # Filter all descendents of this prefix
+    descendent_files = [
+        info for info in flat_tree
+        if os.path.dirname(info[PATH]).startswith(prefix)
+    ]
+
+    # Figure out strictly leaf nodes of this tree (can be immediately added as
+    # children)
+    children_files = [
+        info for info in descendent_files
+        if os.path.dirname(info[PATH]) == prefix
+    ]
+
+    # Figure out all descendent directories
+    descendent_dirs = set(
+        os.path.dirname(info[PATH]) for info in descendent_files
+        if os.path.dirname(info[PATH]).startswith(prefix)
+        and not os.path.dirname(info[PATH]) == prefix
+    )
+
+    # Figure out all descendent directories
+    children_dirs = set(
+        dir_path for dir_path in descendent_dirs
+        if os.path.dirname(dir_path) == prefix
+    )
+
+    # Recurse into children dirs, constructing file trees for each of them,
+    # then appending those
+    for dir_path in children_dirs:
+        info = flat_git_tree_to_nested(descendent_files, prefix=dir_path)
+        root['children'].append(info)
+
+    # Append direct children files
+    for info in children_files:
+        root['children'].append(_make_child(info))
+
+    return root",python,"def flat_git_tree_to_nested(flat_tree, prefix=''):
+    '''
+    Given an array in format:
+        [
+            [""100644"", ""blob"", ""ab3ce..."", ""748"", "".gitignore"" ],
+            [""100644"", ""blob"", ""ab3ce..."", ""748"", ""path/to/thing"" ],
+            ...
+        ]
+
+    Outputs in a nested format:
+        {
+            ""path"": ""/"",
+            ""type"": ""directory"",
+            ""children"": [
+                {
+                    ""type"": ""blob"",
+                    ""size"": 748,
+                    ""sha"": ""ab3ce..."",
+                    ""mode"": ""100644"",
+                },
+                ...
+            ],
+            ...
+        }
+    '''
+    root = _make_empty_dir_dict(prefix if prefix else '/')
+
+    # Filter all descendents of this prefix
+    descendent_files = [
+        info for info in flat_tree
+        if os.path.dirname(info[PATH]).startswith(prefix)
+    ]
+
+    # Figure out strictly leaf nodes of this tree (can be immediately added as
+    # children)
+    children_files = [
+        info for info in descendent_files
+        if os.path.dirname(info[PATH]) == prefix
+    ]
+
+    # Figure out all descendent directories
+    descendent_dirs = set(
+        os.path.dirname(info[PATH]) for info in descendent_files
+        if os.path.dirname(info[PATH]).startswith(prefix)
+        and not os.path.dirname(info[PATH]) == prefix
+    )
+
+    # Figure out all descendent directories
+    children_dirs = set(
+        dir_path for dir_path in descendent_dirs
+        if os.path.dirname(dir_path) == prefix
+    )
+
+    # Recurse into children dirs, constructing file trees for each of them,
+    # then appending those
+    for dir_path in children_dirs:
+        info = flat_git_tree_to_nested(descendent_files, prefix=dir_path)
+        root['children'].append(info)
+
+    # Append direct children files
+    for info in children_files:
+        root['children'].append(_make_child(info))
+
+    return root","['def' 'flat_git_tree_to_nested' '(' 'flat_tree' ',' 'prefix' '=' ""''"" ')'
+ ':' 'root' '=' '_make_empty_dir_dict' '(' 'prefix' 'if' 'prefix' 'else'
+ ""'/'"" ')' '# Filter all descendents of this prefix' 'descendent_files'
+ '=' '[' 'info' 'for' 'info' 'in' 'flat_tree' 'if' 'os' '.' 'path' '.'
+ 'dirname' '(' 'info' '[' 'PATH' ']' ')' '.' 'startswith' '(' 'prefix' ')'
+ ']'
+ '# Figure out strictly leaf nodes of this tree (can be immediately added as'
+ '# children)' 'children_files' '=' '[' 'info' 'for' 'info' 'in'
+ 'descendent_files' 'if' 'os' '.' 'path' '.' 'dirname' '(' 'info' '['
+ 'PATH' ']' ')' '==' 'prefix' ']'
+ '# Figure out all descendent directories' 'descendent_dirs' '=' 'set' '('
+ 'os' '.' 'path' '.' 'dirname' '(' 'info' '[' 'PATH' ']' ')' 'for' 'info'
+ 'in' 'descendent_files' 'if' 'os' '.' 'path' '.' 'dirname' '(' 'info' '['
+ 'PATH' ']' ')' '.' 'startswith' '(' 'prefix' ')' 'and' 'not' 'os' '.'
+ 'path' '.' 'dirname' '(' 'info' '[' 'PATH' ']' ')' '==' 'prefix' ')'
+ '# Figure out all descendent directories' 'children_dirs' '=' 'set' '('
+ 'dir_path' 'for' 'dir_path' 'in' 'descendent_dirs' 'if' 'os' '.' 'path'
+ '.' 'dirname' '(' 'dir_path' ')' '==' 'prefix' ')'
+ '# Recurse into children dirs, constructing file trees for each of them,'
+ '# then appending those' 'for' 'dir_path' 'in' 'children_dirs' ':' 'info'
+ '=' 'flat_git_tree_to_nested' '(' 'descendent_files' ',' 'prefix' '='
+ 'dir_path' ')' 'root' '[' ""'children'"" ']' '.' 'append' '(' 'info' ')'
+ '# Append direct children files' 'for' 'info' 'in' 'children_files' ':'
+ 'root' '[' ""'children'"" ']' '.' 'append' '(' '_make_child' '(' 'info' ')'
+ ')' 'return' 'root']","Given an array in format:
+        [
+            [""100644"", ""blob"", ""ab3ce..."", ""748"", "".gitignore"" ],
+            [""100644"", ""blob"", ""ab3ce..."", ""748"", ""path/to/thing"" ],
+            ...
+        ]
+
+    Outputs in a nested format:
+        {
+            ""path"": ""/"",
+            ""type"": ""directory"",
+            ""children"": [
+                {
+                    ""type"": ""blob"",
+                    ""size"": 748,
+                    ""sha"": ""ab3ce..."",
+                    ""mode"": ""100644"",
+                },
+                ...
+            ],
+            ...
+        }","['Given' 'an' 'array' 'in' 'format' ':' '[' '[' '100644' 'blob' 'ab3ce'
+ '...' '748' '.' 'gitignore' ']' '[' '100644' 'blob' 'ab3ce' '...' '748'
+ 'path' '/' 'to' '/' 'thing' ']' '...' ']']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/utils/filesystem.py#L71-L134
+michaelpb/omnic,omnic/config/settingsmanager.py,SettingsManager.load_all,"def load_all(self, key, default=None):
+        '''
+        Import settings key as a dict or list with values of importable paths
+        If a default constructor is specified, and a path is not importable, it
+        falls back to running the given constructor.
+        '''
+        value = getattr(self, key)
+        if default is not None:
+            def loader(path): return self.load_path_with_default(path, default)
+        else:
+            loader = self.load_path
+        if isinstance(value, dict):
+            return {key: loader(value) for key, value in value.items()}
+        elif isinstance(value, list):
+            return [loader(value) for value in value]
+        else:
+            raise ValueError('load_all must be list or dict')",python,"def load_all(self, key, default=None):
+        '''
+        Import settings key as a dict or list with values of importable paths
+        If a default constructor is specified, and a path is not importable, it
+        falls back to running the given constructor.
+        '''
+        value = getattr(self, key)
+        if default is not None:
+            def loader(path): return self.load_path_with_default(path, default)
+        else:
+            loader = self.load_path
+        if isinstance(value, dict):
+            return {key: loader(value) for key, value in value.items()}
+        elif isinstance(value, list):
+            return [loader(value) for value in value]
+        else:
+            raise ValueError('load_all must be list or dict')","['def' 'load_all' '(' 'self' ',' 'key' ',' 'default' '=' 'None' ')' ':'
+ 'value' '=' 'getattr' '(' 'self' ',' 'key' ')' 'if' 'default' 'is' 'not'
+ 'None' ':' 'def' 'loader' '(' 'path' ')' ':' 'return' 'self' '.'
+ 'load_path_with_default' '(' 'path' ',' 'default' ')' 'else' ':' 'loader'
+ '=' 'self' '.' 'load_path' 'if' 'isinstance' '(' 'value' ',' 'dict' ')'
+ ':' 'return' '{' 'key' ':' 'loader' '(' 'value' ')' 'for' 'key' ','
+ 'value' 'in' 'value' '.' 'items' '(' ')' '}' 'elif' 'isinstance' '('
+ 'value' ',' 'list' ')' ':' 'return' '[' 'loader' '(' 'value' ')' 'for'
+ 'value' 'in' 'value' ']' 'else' ':' 'raise' 'ValueError' '('
+ ""'load_all must be list or dict'"" ')']","Import settings key as a dict or list with values of importable paths
+        If a default constructor is specified, and a path is not importable, it
+        falls back to running the given constructor.","['Import' 'settings' 'key' 'as' 'a' 'dict' 'or' 'list' 'with' 'values'
+ 'of' 'importable' 'paths' 'If' 'a' 'default' 'constructor' 'is'
+ 'specified' 'and' 'a' 'path' 'is' 'not' 'importable' 'it' 'falls' 'back'
+ 'to' 'running' 'the' 'given' 'constructor' '.']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/config/settingsmanager.py#L94-L110
+michaelpb/omnic,omnic/config/settingsmanager.py,SettingsManager.load_path,"def load_path(self, path):
+        '''
+        Load and return a given import path to a module or class
+        '''
+        containing_module, _, last_item = path.rpartition('.')
+        if last_item[0].isupper():
+            # Is a class definition, should do an ""import from""
+            path = containing_module
+        imported_obj = importlib.import_module(path)
+        if last_item[0].isupper():
+            try:
+                imported_obj = getattr(imported_obj, last_item)
+            except AttributeError:
+                msg = 'Cannot import ""%s"". ' \
+                    '(Hint: CamelCase is only for classes)' % last_item
+                raise ConfigurationError(msg)
+        return imported_obj",python,"def load_path(self, path):
+        '''
+        Load and return a given import path to a module or class
+        '''
+        containing_module, _, last_item = path.rpartition('.')
+        if last_item[0].isupper():
+            # Is a class definition, should do an ""import from""
+            path = containing_module
+        imported_obj = importlib.import_module(path)
+        if last_item[0].isupper():
+            try:
+                imported_obj = getattr(imported_obj, last_item)
+            except AttributeError:
+                msg = 'Cannot import ""%s"". ' \
+                    '(Hint: CamelCase is only for classes)' % last_item
+                raise ConfigurationError(msg)
+        return imported_obj","['def' 'load_path' '(' 'self' ',' 'path' ')' ':' 'containing_module' ','
+ '_' ',' 'last_item' '=' 'path' '.' 'rpartition' '(' ""'.'"" ')' 'if'
+ 'last_item' '[' '0' ']' '.' 'isupper' '(' ')' ':'
+ '# Is a class definition, should do an ""import from""' 'path' '='
+ 'containing_module' 'imported_obj' '=' 'importlib' '.' 'import_module'
+ '(' 'path' ')' 'if' 'last_item' '[' '0' ']' '.' 'isupper' '(' ')' ':'
+ 'try' ':' 'imported_obj' '=' 'getattr' '(' 'imported_obj' ',' 'last_item'
+ ')' 'except' 'AttributeError' ':' 'msg' '=' '\'Cannot import ""%s"". \''
+ ""'(Hint: CamelCase is only for classes)'"" '%' 'last_item' 'raise'
+ 'ConfigurationError' '(' 'msg' ')' 'return' 'imported_obj']",Load and return a given import path to a module or class,"['Load' 'and' 'return' 'a' 'given' 'import' 'path' 'to' 'a' 'module' 'or'
+ 'class']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/config/settingsmanager.py#L112-L128
+michaelpb/omnic,omnic/config/settingsmanager.py,SettingsManager.load_path_with_default,"def load_path_with_default(self, path, default_constructor):
+        '''
+        Same as `load_path(path)', except uses default_constructor on import
+        errors, or if loaded a auto-generated namespace package (e.g. bare
+        directory).
+        '''
+        try:
+            imported_obj = self.load_path(path)
+        except (ImportError, ConfigurationError):
+            imported_obj = default_constructor(path)
+        else:
+            # Ugly but seemingly expedient way to check a module was an
+            # namespace type module
+            if (isinstance(imported_obj, ModuleType) and
+                    imported_obj.__spec__.origin == 'namespace'):
+                imported_obj = default_constructor(path)
+        return imported_obj",python,"def load_path_with_default(self, path, default_constructor):
+        '''
+        Same as `load_path(path)', except uses default_constructor on import
+        errors, or if loaded a auto-generated namespace package (e.g. bare
+        directory).
+        '''
+        try:
+            imported_obj = self.load_path(path)
+        except (ImportError, ConfigurationError):
+            imported_obj = default_constructor(path)
+        else:
+            # Ugly but seemingly expedient way to check a module was an
+            # namespace type module
+            if (isinstance(imported_obj, ModuleType) and
+                    imported_obj.__spec__.origin == 'namespace'):
+                imported_obj = default_constructor(path)
+        return imported_obj","['def' 'load_path_with_default' '(' 'self' ',' 'path' ','
+ 'default_constructor' ')' ':' 'try' ':' 'imported_obj' '=' 'self' '.'
+ 'load_path' '(' 'path' ')' 'except' '(' 'ImportError' ','
+ 'ConfigurationError' ')' ':' 'imported_obj' '=' 'default_constructor' '('
+ 'path' ')' 'else' ':'
+ '# Ugly but seemingly expedient way to check a module was an'
+ '# namespace type module' 'if' '(' 'isinstance' '(' 'imported_obj' ','
+ 'ModuleType' ')' 'and' 'imported_obj' '.' '__spec__' '.' 'origin' '=='
+ ""'namespace'"" ')' ':' 'imported_obj' '=' 'default_constructor' '(' 'path'
+ ')' 'return' 'imported_obj']","Same as `load_path(path)', except uses default_constructor on import
+        errors, or if loaded a auto-generated namespace package (e.g. bare
+        directory).","['Same' 'as' 'load_path' '(' 'path' ')' 'except' 'uses'
+ 'default_constructor' 'on' 'import' 'errors' 'or' 'if' 'loaded' 'a'
+ 'auto' '-' 'generated' 'namespace' 'package' '(' 'e' '.' 'g' '.' 'bare'
+ 'directory' ')' '.']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/config/settingsmanager.py#L130-L146
+michaelpb/omnic,omnic/config/settingsmanager.py,SettingsManager.set,"def set(self, **kwargs):
+        '''
+        Override existing settings, taking precedence over both user settings
+        object and default settings. Useful for specific runtime requirements,
+        such as overriding PORT or HOST.
+        '''
+        for lower_key, value in kwargs.items():
+            if lower_key.lower() != lower_key:
+                raise ValueError('Requires lowercase: %s' % lower_key)
+            key = lower_key.upper()
+            try:
+                getattr(self, key)
+            except (AttributeError, ConfigurationError):
+                raise AttributeError('Cannot override %s' % key)
+            self.overridden_settings[key] = value",python,"def set(self, **kwargs):
+        '''
+        Override existing settings, taking precedence over both user settings
+        object and default settings. Useful for specific runtime requirements,
+        such as overriding PORT or HOST.
+        '''
+        for lower_key, value in kwargs.items():
+            if lower_key.lower() != lower_key:
+                raise ValueError('Requires lowercase: %s' % lower_key)
+            key = lower_key.upper()
+            try:
+                getattr(self, key)
+            except (AttributeError, ConfigurationError):
+                raise AttributeError('Cannot override %s' % key)
+            self.overridden_settings[key] = value","['def' 'set' '(' 'self' ',' '*' '*' 'kwargs' ')' ':' 'for' 'lower_key' ','
+ 'value' 'in' 'kwargs' '.' 'items' '(' ')' ':' 'if' 'lower_key' '.'
+ 'lower' '(' ')' '!=' 'lower_key' ':' 'raise' 'ValueError' '('
+ ""'Requires lowercase: %s'"" '%' 'lower_key' ')' 'key' '=' 'lower_key' '.'
+ 'upper' '(' ')' 'try' ':' 'getattr' '(' 'self' ',' 'key' ')' 'except' '('
+ 'AttributeError' ',' 'ConfigurationError' ')' ':' 'raise'
+ 'AttributeError' '(' ""'Cannot override %s'"" '%' 'key' ')' 'self' '.'
+ 'overridden_settings' '[' 'key' ']' '=' 'value']","Override existing settings, taking precedence over both user settings
+        object and default settings. Useful for specific runtime requirements,
+        such as overriding PORT or HOST.","['Override' 'existing' 'settings' 'taking' 'precedence' 'over' 'both'
+ 'user' 'settings' 'object' 'and' 'default' 'settings' '.' 'Useful' 'for'
+ 'specific' 'runtime' 'requirements' 'such' 'as' 'overriding' 'PORT' 'or'
+ 'HOST' '.']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/config/settingsmanager.py#L148-L162
+michaelpb/omnic,omnic/config/settingsmanager.py,SettingsManager.use_settings,"def use_settings(self, settings_module):
+        '''
+        Useful for tests for overriding current settings manually
+        '''
+        self._previous_settings = self.settings_module
+        self.settings_module = settings_module
+        self.reconfigure()",python,"def use_settings(self, settings_module):
+        '''
+        Useful for tests for overriding current settings manually
+        '''
+        self._previous_settings = self.settings_module
+        self.settings_module = settings_module
+        self.reconfigure()","['def' 'use_settings' '(' 'self' ',' 'settings_module' ')' ':' 'self' '.'
+ '_previous_settings' '=' 'self' '.' 'settings_module' 'self' '.'
+ 'settings_module' '=' 'settings_module' 'self' '.' 'reconfigure' '(' ')']",Useful for tests for overriding current settings manually,['Useful' 'for' 'tests' 'for' 'overriding' 'current' 'settings' 'manually'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/config/settingsmanager.py#L164-L170
+michaelpb/omnic,omnic/config/settingsmanager.py,SettingsManager.use_settings_dict,"def use_settings_dict(self, settings_dict):
+        '''
+        Slightly cleaner interface to override settings that autogenerates a
+        settings module based on a given dict.
+        '''
+        class SettingsDictModule:
+            __slots__ = tuple(key.upper() for key in settings_dict.keys())
+        settings_obj = SettingsDictModule()
+        for key, value in settings_dict.items():
+            setattr(settings_obj, key.upper(), value)
+        self.use_settings(settings_obj)",python,"def use_settings_dict(self, settings_dict):
+        '''
+        Slightly cleaner interface to override settings that autogenerates a
+        settings module based on a given dict.
+        '''
+        class SettingsDictModule:
+            __slots__ = tuple(key.upper() for key in settings_dict.keys())
+        settings_obj = SettingsDictModule()
+        for key, value in settings_dict.items():
+            setattr(settings_obj, key.upper(), value)
+        self.use_settings(settings_obj)","['def' 'use_settings_dict' '(' 'self' ',' 'settings_dict' ')' ':' 'class'
+ 'SettingsDictModule' ':' '__slots__' '=' 'tuple' '(' 'key' '.' 'upper'
+ '(' ')' 'for' 'key' 'in' 'settings_dict' '.' 'keys' '(' ')' ')'
+ 'settings_obj' '=' 'SettingsDictModule' '(' ')' 'for' 'key' ',' 'value'
+ 'in' 'settings_dict' '.' 'items' '(' ')' ':' 'setattr' '(' 'settings_obj'
+ ',' 'key' '.' 'upper' '(' ')' ',' 'value' ')' 'self' '.' 'use_settings'
+ '(' 'settings_obj' ')']","Slightly cleaner interface to override settings that autogenerates a
+        settings module based on a given dict.","['Slightly' 'cleaner' 'interface' 'to' 'override' 'settings' 'that'
+ 'autogenerates' 'a' 'settings' 'module' 'based' 'on' 'a' 'given' 'dict'
+ '.']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/config/settingsmanager.py#L172-L182
+michaelpb/omnic,omnic/config/settingsmanager.py,SettingsManager.import_path_to_absolute_path,"def import_path_to_absolute_path(import_path, file_marker):
+        '''
+        Given a Python import path, convert to a likely absolute filesystem
+        path, by searching for the given filename marker (such as
+        'package.json' or '__init__.py') through the Python system path. Do not
+        return given filename.
+        '''
+        path_fragment = import_path.replace('.', os.path.sep)
+        path_suffix = os.path.join(path_fragment, file_marker)
+        for path_base in sys.path:
+            path = os.path.join(path_base, path_suffix)
+            if os.path.exists(path):
+                return os.path.join(path_base, path_fragment)
+        msg = 'Cannot find import path: %s, %s'
+        raise ConfigurationError(msg % (import_path, file_marker))",python,"def import_path_to_absolute_path(import_path, file_marker):
+        '''
+        Given a Python import path, convert to a likely absolute filesystem
+        path, by searching for the given filename marker (such as
+        'package.json' or '__init__.py') through the Python system path. Do not
+        return given filename.
+        '''
+        path_fragment = import_path.replace('.', os.path.sep)
+        path_suffix = os.path.join(path_fragment, file_marker)
+        for path_base in sys.path:
+            path = os.path.join(path_base, path_suffix)
+            if os.path.exists(path):
+                return os.path.join(path_base, path_fragment)
+        msg = 'Cannot find import path: %s, %s'
+        raise ConfigurationError(msg % (import_path, file_marker))","['def' 'import_path_to_absolute_path' '(' 'import_path' ',' 'file_marker'
+ ')' ':' 'path_fragment' '=' 'import_path' '.' 'replace' '(' ""'.'"" ','
+ 'os' '.' 'path' '.' 'sep' ')' 'path_suffix' '=' 'os' '.' 'path' '.'
+ 'join' '(' 'path_fragment' ',' 'file_marker' ')' 'for' 'path_base' 'in'
+ 'sys' '.' 'path' ':' 'path' '=' 'os' '.' 'path' '.' 'join' '('
+ 'path_base' ',' 'path_suffix' ')' 'if' 'os' '.' 'path' '.' 'exists' '('
+ 'path' ')' ':' 'return' 'os' '.' 'path' '.' 'join' '(' 'path_base' ','
+ 'path_fragment' ')' 'msg' '=' ""'Cannot find import path: %s, %s'"" 'raise'
+ 'ConfigurationError' '(' 'msg' '%' '(' 'import_path' ',' 'file_marker'
+ ')' ')']","Given a Python import path, convert to a likely absolute filesystem
+        path, by searching for the given filename marker (such as
+        'package.json' or '__init__.py') through the Python system path. Do not
+        return given filename.","['Given' 'a' 'Python' 'import' 'path' 'convert' 'to' 'a' 'likely'
+ 'absolute' 'filesystem' 'path' 'by' 'searching' 'for' 'the' 'given'
+ 'filename' 'marker' '(' 'such' 'as' 'package' '.' 'json' 'or' '__init__'
+ '.' 'py' ')' 'through' 'the' 'Python' 'system' 'path' '.' 'Do' 'not'
+ 'return' 'given' 'filename' '.']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/config/settingsmanager.py#L192-L206
+michaelpb/omnic,omnic/builtin/converters/manifest.py,ManifestDownloader._close,"def _close(self):
+        '''
+        Closes aiohttp session and all open file descriptors
+        '''
+        if hasattr(self, 'aiohttp'):
+            if not self.aiohttp.closed:
+                self.aiohttp.close()
+        if hasattr(self, 'file_descriptors'):
+            for fd in self.file_descriptors.values():
+                if not fd.closed:
+                    fd.close()",python,"def _close(self):
+        '''
+        Closes aiohttp session and all open file descriptors
+        '''
+        if hasattr(self, 'aiohttp'):
+            if not self.aiohttp.closed:
+                self.aiohttp.close()
+        if hasattr(self, 'file_descriptors'):
+            for fd in self.file_descriptors.values():
+                if not fd.closed:
+                    fd.close()","['def' '_close' '(' 'self' ')' ':' 'if' 'hasattr' '(' 'self' ','
+ ""'aiohttp'"" ')' ':' 'if' 'not' 'self' '.' 'aiohttp' '.' 'closed' ':'
+ 'self' '.' 'aiohttp' '.' 'close' '(' ')' 'if' 'hasattr' '(' 'self' ','
+ ""'file_descriptors'"" ')' ':' 'for' 'fd' 'in' 'self' '.'
+ 'file_descriptors' '.' 'values' '(' ')' ':' 'if' 'not' 'fd' '.' 'closed'
+ ':' 'fd' '.' 'close' '(' ')']",Closes aiohttp session and all open file descriptors,['Closes' 'aiohttp' 'session' 'and' 'all' 'open' 'file' 'descriptors'],train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/builtin/converters/manifest.py#L40-L50
+michaelpb/omnic,omnic/worker/base.py,BaseWorker.run_multiconvert,"async def run_multiconvert(self, url_string, to_type):
+        '''
+        Enqueues in succession all conversions steps necessary to take the
+        given URL and convert it to to_type, storing the result in the cache
+        '''
+        async def enq_convert(*args):
+            await self.enqueue(Task.CONVERT, args)
+        await tasks.multiconvert(url_string, to_type, enq_convert)",python,"async def run_multiconvert(self, url_string, to_type):
+        '''
+        Enqueues in succession all conversions steps necessary to take the
+        given URL and convert it to to_type, storing the result in the cache
+        '''
+        async def enq_convert(*args):
+            await self.enqueue(Task.CONVERT, args)
+        await tasks.multiconvert(url_string, to_type, enq_convert)","['async' 'def' 'run_multiconvert' '(' 'self' ',' 'url_string' ','
+ 'to_type' ')' ':' 'async' 'def' 'enq_convert' '(' '*' 'args' ')' ':'
+ 'await' 'self' '.' 'enqueue' '(' 'Task' '.' 'CONVERT' ',' 'args' ')'
+ 'await' 'tasks' '.' 'multiconvert' '(' 'url_string' ',' 'to_type' ','
+ 'enq_convert' ')']","Enqueues in succession all conversions steps necessary to take the
+        given URL and convert it to to_type, storing the result in the cache","['Enqueues' 'in' 'succession' 'all' 'conversions' 'steps' 'necessary' 'to'
+ 'take' 'the' 'given' 'URL' 'and' 'convert' 'it' 'to' 'to_type' 'storing'
+ 'the' 'result' 'in' 'the' 'cache']",train,https://github.com/michaelpb/omnic/blob/1111cfd73c9dc1955afe42d9cf2a468c46f83cd6/omnic/worker/base.py#L90-L97
