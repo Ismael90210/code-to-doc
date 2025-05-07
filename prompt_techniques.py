@@ -38,12 +38,36 @@ class PromptTechniques:
             f"Create security-aware documentation highlighting potential vulnerabilities: {{code}}"
         ]
 
+        # Chain Of Thought Prompts
+        self.chain_of_thought_prompts = [
+            f"Analyze this function step-by-step then write a Google-style docstring: 1) Purpose 2) Parameters 3) Returns 4) Examples 5) Docstring: {{code}}",
+            f"As a senior engineer, document this function through: 1) Understanding logic 2) Identifying inputs/outputs 3) Noting edge cases 4) Writing docs: {{code}}",
+            f"Think through: 1) What does this function do? 2) What does it need? 3) What does it return? 4) Now write professional docs: {{code}}",
+            f"Documentation process: 1) Analyze function signature 2) Understand implementation 3) Note special cases 4) Write Google-style docs: {{code}}",
+            f"Step-by-step: 1) Parse function name 2) Examine parameters 3) Study return value 4) Write complete docstring: {{code}}",
+            f"Reason through: 1) Function purpose 2) Parameter roles 3) Return value meaning 4) Produce documentation: {{code}}",
+            f"As a Python expert, analyze then document: 1) Overall behavior 2) Input requirements 3) Output details 4) Final docstring: {{code}}",
+            f"Systematic documentation: 1) Understand code 2) Identify key aspects 3) Consider usage 4) Write professional docs: {{code}}",
+            f"Professional doc process: 1) Study implementation 2) Note important details 3) Structure information 4) Write Google docs: {{code}}",
+            f"Methodical approach: 1) What problem solves? 2) How implemented? 3) What returns? 4) Write formal docs: {{code}}",
+            f"Code review style: 1) Verify function 2) Check parameters 3) Validate returns 4) Write complete docs: {{code}}",
+            f"Engineering docs: 1) Requirements 2) Design 3) Verification 4) Write specs: {{code}}",
+            f"Teach this function: 1) Concepts needed 2) How it works 3) How to use 4) Write docs: {{code}}",
+            f"Production docs: 1) Business need 2) Technical solution 3) Usage patterns 4) Write formally: {{code}}",
+            f"API documentation: 1) Interface contract 2) Error conditions 3) Examples 4) Write docs: {{code}}",
+            f"Complete analysis: 1) Functional role 2) Data flow 3) Edge cases 4) Write professional docs: {{code}}",
+            f"Deep dive: 1) Code walkthrough 2) Key operations 3) Failure modes 4) Write documentation: {{code}}",
+            f"Quality docs: 1) Correctness 2) Safety 3) Performance 4) Write complete docs: {{code}}",
+            f"Maintainer's view: 1) Evolution path 2) Dependencies 3) Technical debt 4) Write docs: {{code}}",
+            f"Expert documentation: 1) Core algorithm 2) Optimization 3) Tradeoffs 4) Write formal docs: {{code}}"
+        ]
+
     def generate_with_ollama(self, prompt):
 
         try:
             response = requests.post(
                 "http://localhost:11434/api/generate",
-                json={"model": self.model, "prompt": prompt, "stream": False},
+                json={"model": self.model, "prompt": prompt, "stream": True},
                 stream=True,
                 timeout=30
             )
@@ -63,29 +87,6 @@ class PromptTechniques:
 
         return result.strip() or "[No response from model]"
 
-    # def zero_shot_prompting(self, code, num_prompts):
-    #     prompts = [
-    #         f"As a senior Python engineer, write a professional Google-style docstring for this function: {{code}}",
-    #         f"Please document the following Python function using Google-style format, providing detailed parameter and return info: {{code}}",
-    #         f"Generate a structured Python docstring in Google format for the following function. Explain inputs, outputs, and purpose: {{code}}",
-    #         f"You are tasked with documenting the next function. Use Google-style formatting and ensure clarity and completeness: {{code}}",
-    #         f"Write a clear and concise Google-style docstring for this function as if preparing code for production: {{code}}",
-    #         f"You are a Python developer writing internal documentation. Add a complete Google-style docstring to the function below: {{code}}",
-    #         f"As part of code review, produce a Google-style docstring for this function explaining its behavior: {{code}}",
-    #         f"Document the Python function below using the Google style. Include a summary, arguments, return value, and exceptions if any: {{code}}",
-    #         f"Write documentation for the following function using the Google-style docstring standard. Be informative and concise: {{code}}",
-    #         f"Imagine you're writing docs for a public API. Add a proper Google-style docstring to the function: {{code}}"
-    #     ]
-    #     selected = prompts[:num_prompts]
-    #     result = []
-    #     for prompt in selected:
-    #         output = self.generate_with_ollama(prompt)
-    #         result.append({
-    #             "prompt": prompt,
-    #             "output": output,
-    #         })
-    #     return result
-
     # Zero Shot Prompting
     def zero_shot_prompting(self, code, num_prompts=29):
         """Generate documentation using zero-shot prompting."""
@@ -94,22 +95,6 @@ class PromptTechniques:
             "prompt": p.format(code=code),
             "output": self.generate_with_ollama(p.format(code=code))
         } for p in selected]
-
-    # def one_shot_prompting(self, code, example, num_prompts):
-    #     """
-    #     One-shot prompting: include a single example before the task.
-    #     """
-    #     prompts = [
-    #         f"Here is one example:\n"
-    #         f"Function:\n{example['input']}\n"
-    #         f"Docstring:\n{example['output']}\n\n"
-    #         f"Now, write a docstring for the following function:\n{code}\n"
-    #         f"Output:", "second_prompt"]
-    #     selected = prompts[:num_prompts]
-    #     result = []
-    #     for prompt in selected:
-    #         result = self.generate_with_ollama(prompt)
-    #     return result
 
     def one_shot_prompting(self, code, examples, num_prompts):
         """
