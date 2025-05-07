@@ -5,6 +5,38 @@ class PromptTechniques:
     def __init__(self, model):
         self.model = model
 
+        self.zero_shot_prompts = [
+            f"As a senior Python engineer, write a professional Google-style docstring for this function: {{code}}",
+            f"Please document the following Python function using Google-style format, providing detailed parameter and return info: {{code}}",
+            f"Generate a structured Python docstring in Google format for the following function. Explain inputs, outputs, and purpose: {{code}}",
+            f"You are tasked with documenting the next function. Use Google-style formatting and ensure clarity and completeness: {{code}}",
+            f"Write a clear and concise Google-style docstring for this function as if preparing code for production: {{code}}",
+            f"You are a Python developer writing internal documentation. Add a complete Google-style docstring to the function below: {{code}}",
+            f"As part of code review, produce a Google-style docstring for this function explaining its behavior: {{code}}",
+            f"Document the Python function below using the Google style. Include a summary, arguments, return value, and exceptions if any: {{code}}",
+            f"Write documentation for the following function using the Google-style docstring standard. Be informative and concise: {{code}}",
+            f"Imagine you're writing docs for a public API. Add a proper Google-style docstring to the function: {{code}}"
+            f"Generate a one-line docstring describing what this Python function does: {{code}}",
+            f"Write a Google-style docstring for this function including Args and Returns sections: {{code}}",
+            f"Create a NumPy-style docstring for this function with Parameters, Returns, and Examples sections: {{code}}",
+            f"Document this function including: 1) Purpose 2) Parameters 3) Return value 4) Usage example: {{code}}",
+            f"Generate documentation for this function that explicitly lists edge cases: {{code}}",
+            f"Write Python type-annotated docstring including parameter and return types: {{code}}",
+            f"Create documentation for this class method including its relationship to class state: {{code}}",
+            f"Document this async function explaining its awaitable behavior: {{code}}",
+            f"Write docs for this generator function explaining its yielding behavior: {{code}}",
+            f"Explain what this decorator does and show example usage: {{code}}",
+            f"Write production-quality documentation for this mission-critical function: {{code}}",
+            f"Create beginner-friendly documentation with simple explanations: {{code}}",
+            f"Document this function including performance characteristics: {{code}}",
+            f"Write documentation for this data science function explaining its math operations: {{code}}",
+            f"Document this web handler including expected request/response formats: {{code}}",
+            f"Create docs for this ML function explaining algorithm and hyperparameters: {{code}}",
+            f"Write a concise docstring for this function in exactly 3 sentences: {{code}}",
+            f"Document this function by contrasting it with [standard_library_function]: {{code}}",
+            f"Create security-aware documentation highlighting potential vulnerabilities: {{code}}"
+        ]
+
     def generate_with_ollama(self, prompt):
 
         try:
