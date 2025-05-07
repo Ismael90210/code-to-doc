@@ -116,7 +116,7 @@ if __name__ == "__main__":
                     "language": language,
                     "input_code": func,
                     "model": model_used,
-                    "prompt": record,
+                    "prompt": task,
                     "generated_doc": zero_doc
                 })
             case "2":
@@ -128,7 +128,7 @@ if __name__ == "__main__":
                     "language": language,
                     "input_code": func,
                     "model": model_used,
-                    "prompt": record,
+                    "prompt": task,
                     "generated_doc": few_doc
                 })
             case "3":
@@ -140,7 +140,7 @@ if __name__ == "__main__":
                     "language": language,
                     "input_code": func,
                     "model": model_used,
-                    "prompt": record,
+                    "prompt": task,
                     "generated_doc": chain_doc
                 })
             case "4":
@@ -152,7 +152,7 @@ if __name__ == "__main__":
                     "language": language,
                     "input_code": func,
                     "model": model_used,
-                    "prompt": record,
+                    "prompt": task,
                     "generated_doc": structured_doc
                 })
             case "5":
@@ -160,7 +160,7 @@ if __name__ == "__main__":
                     "filename": os.path.basename(file_path),
                     "function_name": func_name,
                     "model": model_used,
-                    "prompt": record,
+                    "prompt": task,
                     "input_code": func,
                     "generated_doc": one_doc
                 })
