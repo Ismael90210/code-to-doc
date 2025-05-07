@@ -27,7 +27,8 @@ def save_to_csv(output_path, records):
         "input_code",
         "model",
         "prompt",
-        "generated_doc"
+        "generated_doc",
+        "origin_doc",
     ]
     with open(output_path, mode='w', newline='', encoding='utf-8') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
@@ -118,6 +119,7 @@ if __name__ == "__main__":
                     "model": model_used,
                     "prompt": task,
                     "generated_doc": zero_doc
+                    "origin_doc": docstring
                 })
             case "2":
                 few_shot_records.append({
@@ -130,6 +132,7 @@ if __name__ == "__main__":
                     "model": model_used,
                     "prompt": task,
                     "generated_doc": few_doc
+                    "origin_doc": docstring
                 })
             case "3":
                 chain_records.append({
@@ -141,7 +144,8 @@ if __name__ == "__main__":
                     "input_code": func,
                     "model": model_used,
                     "prompt": task,
-                    "generated_doc": chain_doc
+                    "generated_doc": chain_doc,
+                    "origin_doc": docstring
                 })
             case "4":
                 structured_records.append({
@@ -153,7 +157,8 @@ if __name__ == "__main__":
                     "input_code": func,
                     "model": model_used,
                     "prompt": task,
-                    "generated_doc": structured_doc
+                    "generated_doc": structured_doc,
+                    "origin_doc": docstring
                 })
             case "5":
                 one_shot_records.append({
@@ -162,7 +167,8 @@ if __name__ == "__main__":
                     "model": model_used,
                     "prompt": task,
                     "input_code": func,
-                    "generated_doc": one_doc
+                    "generated_doc": one_doc,
+                    "origin_doc":docstring
                 })
 
 
