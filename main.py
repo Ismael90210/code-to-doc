@@ -92,7 +92,7 @@ if __name__ == "__main__":
     print("Available prompts:\n")
     num = input("Choose(1, 2, 3, 4, or 5): zero_shot_records, few_shot_records, chain_records, structured_records, one_shot_records :\n")
     type_prompts = PromptTechniques(model_used)
-    num_prompts = 2
+    num_prompts = 20
     #int(input("Choose the number of prompts: ")))
     zero_shot_records = []
     few_shot_records = []

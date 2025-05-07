@@ -88,8 +88,7 @@ class PromptTechniques:
         return result.strip() or "[No response from model]"
 
     # Zero Shot Prompting
-    def zero_shot_prompting(self, code, num_prompts=29):
-        """Generate documentation using zero-shot prompting."""
+    def zero_shot_prompting(self, code, num_prompts):
         selected = self.zero_shot_prompts[:num_prompts]
         return [{
             "prompt": p.format(code=code),
@@ -145,43 +144,16 @@ class PromptTechniques:
             })
         return result
 
+    # Chain Of Thought Prompting
     def chain_of_thought_prompting(self, code_snippet, num_prompts):
-        """
-        Chain-of-thought prompting: presents reasoning steps leading up to the docstring request.
+        selected_prompts = self.chain_of_thought_prompts[:num_prompts]
 
-        Args:
-            code_snippet (str): The Python function to be documented.
-            num_prompts (int): Number of reasoning prompt variations to run.
-
-        Returns:
-            List[Dict]: Each dictionary contains the prompt and the model's output.
-        """
-        # Predefined reasoning chains for variety and testing
-        reasoning_prompts = [
-            "Let's think step by step. What does the function do at a high level? What are its inputs and outputs?",
-            "First, identify the purpose of the function. Next, explain what the parameters are and what the function returns.",
-            "We'll break this down. Start with what the function is named, then explain the body line by line, then construct a docstring.",
-            "Analyze the control flow and data types used in the function. What does this tell you about its purpose?",
-            "To write a good docstring, first summarize what the function accomplishes. Then list the arguments and return value with their roles.",
-            "Examine the function name and logic. How can we describe this to someone unfamiliar with the implementation?",
-            "Think aloud: What problem is this function solving? What assumptions does it make? What should the user know?",
-            "Walk through a sample input and predict the output. Then generalize to explain the function’s behavior.",
-            "Explain each part of the function out loud like you’re teaching it. Then write the docstring to reflect that explanation.",
-            "Describe the function in plain English, then rewrite that as a structured docstring using Google style."
-        ]
-
-        selected_prompts = reasoning_prompts[:num_prompts]
         results = []
-
-        for reasoning in selected_prompts:
-            prompt = (
-                f"Problem: {reasoning}\n\n"
-                f"Here is the function to analyze and document:\n"
-                f"```python\n{code_snippet}\n```\n\n"
-                f"Let's think through this step by step and write a proper Google-style docstring."
-            )
+        for template in selected_prompts:
+            prompt = template.format(code=code_snippet)
             output = self.generate_with_ollama(prompt)
             results.append({
+                "reasoning_framework": template.split('\n')[0][:50] + "...",
                 "prompt": prompt,
                 "model_output": output
             })
