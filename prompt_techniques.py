@@ -5,6 +5,7 @@ class PromptTechniques:
     def __init__(self, model):
         self.model = model
 
+        # Zero Shot Prompts
         self.zero_shot_prompts = [
             f"As a senior Python engineer, write a professional Google-style docstring for this function: {{code}}",
             f"Please document the following Python function using Google-style format, providing detailed parameter and return info: {{code}}",
@@ -62,28 +63,37 @@ class PromptTechniques:
 
         return result.strip() or "[No response from model]"
 
-    def zero_shot_prompting(self, code, num_prompts):
-        prompts = [
-            f"As a senior Python engineer, write a professional Google-style docstring for this function: {{code}}",
-            f"Please document the following Python function using Google-style format, providing detailed parameter and return info: {{code}}",
-            f"Generate a structured Python docstring in Google format for the following function. Explain inputs, outputs, and purpose: {{code}}",
-            f"You are tasked with documenting the next function. Use Google-style formatting and ensure clarity and completeness: {{code}}",
-            f"Write a clear and concise Google-style docstring for this function as if preparing code for production: {{code}}",
-            f"You are a Python developer writing internal documentation. Add a complete Google-style docstring to the function below: {{code}}",
-            f"As part of code review, produce a Google-style docstring for this function explaining its behavior: {{code}}",
-            f"Document the Python function below using the Google style. Include a summary, arguments, return value, and exceptions if any: {{code}}",
-            f"Write documentation for the following function using the Google-style docstring standard. Be informative and concise: {{code}}",
-            f"Imagine you're writing docs for a public API. Add a proper Google-style docstring to the function: {{code}}"
-        ]
-        selected = prompts[:num_prompts]
-        result = []
-        for prompt in selected:
-            output = self.generate_with_ollama(prompt)
-            result.append({
-                "prompt": prompt,
-                "output": output,
-            })
-        return result
+    # def zero_shot_prompting(self, code, num_prompts):
+    #     prompts = [
+    #         f"As a senior Python engineer, write a professional Google-style docstring for this function: {{code}}",
+    #         f"Please document the following Python function using Google-style format, providing detailed parameter and return info: {{code}}",
+    #         f"Generate a structured Python docstring in Google format for the following function. Explain inputs, outputs, and purpose: {{code}}",
+    #         f"You are tasked with documenting the next function. Use Google-style formatting and ensure clarity and completeness: {{code}}",
+    #         f"Write a clear and concise Google-style docstring for this function as if preparing code for production: {{code}}",
+    #         f"You are a Python developer writing internal documentation. Add a complete Google-style docstring to the function below: {{code}}",
+    #         f"As part of code review, produce a Google-style docstring for this function explaining its behavior: {{code}}",
+    #         f"Document the Python function below using the Google style. Include a summary, arguments, return value, and exceptions if any: {{code}}",
+    #         f"Write documentation for the following function using the Google-style docstring standard. Be informative and concise: {{code}}",
+    #         f"Imagine you're writing docs for a public API. Add a proper Google-style docstring to the function: {{code}}"
+    #     ]
+    #     selected = prompts[:num_prompts]
+    #     result = []
+    #     for prompt in selected:
+    #         output = self.generate_with_ollama(prompt)
+    #         result.append({
+    #             "prompt": prompt,
+    #             "output": output,
+    #         })
+    #     return result
+
+    # Zero Shot Prompting
+    def zero_shot_prompting(self, code, num_prompts=29):
+        """Generate documentation using zero-shot prompting."""
+        selected = self.zero_shot_prompts[:num_prompts]
+        return [{
+            "prompt": p.format(code=code),
+            "output": self.generate_with_ollama(p.format(code=code))
+        } for p in selected]
 
     # def one_shot_prompting(self, code, example, num_prompts):
     #     """
