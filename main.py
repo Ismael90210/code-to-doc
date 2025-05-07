@@ -145,6 +145,7 @@ if __name__ == "__main__":
                     "model": model_used,
                     "prompt": prompt,
                     "generated_doc": zero_doc,
+
                     "origin_doc": docstring
                 })
             case "2":
@@ -158,6 +159,7 @@ if __name__ == "__main__":
                     "model": model_used,
                     "prompt": prompt,
                     "generated_doc": few_doc,
+
                     "origin_doc": docstring
                 })
             case "3":
@@ -170,6 +172,7 @@ if __name__ == "__main__":
                     "input_code": func,
                     "model": model_used,
                     "prompt": prompt,
+
                     "generated_doc": chain_doc,
                     "origin_doc": docstring
                 })
@@ -183,6 +186,7 @@ if __name__ == "__main__":
                     "input_code": func,
                     "model": model_used,
                     "prompt": prompt,
+
                     "generated_doc": structured_doc,
                     "origin_doc": docstring
                 })
@@ -192,6 +196,7 @@ if __name__ == "__main__":
                     "function_name": func_name,
                     "model": model_used,
                     "prompt": prompt,
+
                     "input_code": func,
                     "generated_doc": one_doc,
                     "origin_doc":docstring
