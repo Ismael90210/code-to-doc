@@ -2,36 +2,13 @@ import requests
 import json
 
 class PromptTechniques:
-    def __init__(self, model):
+    def __init__(self, model, max_retries=3, initial_timeout=30):
         self.model = model
+        self.max_retries = max_retries
+        self.initial_timeout = initial_timeout
 
-    def generate_with_ollama(self, prompt):
-
-        try:
-            response = requests.post(
-                "http://localhost:11434/api/generate",
-                json={"model": self.model, "prompt": prompt, "stream": False},
-                stream=True,
-                timeout=30
-            )
-        except requests.exceptions.RequestException as e:
-            return f"[ERROR] Ollama request failed: {e}"
-
-        result = ""
-        for line in response.iter_lines():
-            if line:
-                try:
-                    data = json.loads(line.decode("utf-8"))
-                    result += data.get("response", "")
-                    if data.get("done", False):
-                        break
-                except json.JSONDecodeError:
-                    continue
-
-        return result.strip() or "[No response from model]"
-
-    def zero_shot_prompting(self, code, num_prompts):
-        prompts = [
+        # Zero Shot Prompts
+        self.zero_shot_prompts = [
             f"As a senior Python engineer, write a professional Google-style docstring for this function: {{code}}",
             f"Please document the following Python function using Google-style format, providing detailed parameter and return info: {{code}}",
             f"Generate a structured Python docstring in Google format for the following function. Explain inputs, outputs, and purpose: {{code}}",
@@ -42,32 +19,58 @@ class PromptTechniques:
             f"Document the Python function below using the Google style. Include a summary, arguments, return value, and exceptions if any: {{code}}",
             f"Write documentation for the following function using the Google-style docstring standard. Be informative and concise: {{code}}",
             f"Imagine you're writing docs for a public API. Add a proper Google-style docstring to the function: {{code}}"
+            f"Generate a one-line docstring describing what this Python function does: {{code}}",
+            f"Write a Google-style docstring for this function including Args and Returns sections: {{code}}",
+            f"Create a NumPy-style docstring for this function with Parameters, Returns, and Examples sections: {{code}}",
+            f"Document this function including: 1) Purpose 2) Parameters 3) Return value 4) Usage example: {{code}}",
+            f"Generate documentation for this function that explicitly lists edge cases: {{code}}",
+            f"Write Python type-annotated docstring including parameter and return types: {{code}}",
+            f"Create documentation for this class method including its relationship to class state: {{code}}",
+            f"Document this async function explaining its awaitable behavior: {{code}}",
+            f"Write docs for this generator function explaining its yielding behavior: {{code}}",
+            f"Explain what this decorator does and show example usage: {{code}}",
+            f"Write production-quality documentation for this mission-critical function: {{code}}",
+            f"Create beginner-friendly documentation with simple explanations: {{code}}",
+            f"Document this function including performance characteristics: {{code}}",
+            f"Write documentation for this data science function explaining its math operations: {{code}}",
+            f"Document this web handler including expected request/response formats: {{code}}",
+            f"Create docs for this ML function explaining algorithm and hyperparameters: {{code}}",
+            f"Write a concise docstring for this function in exactly 3 sentences: {{code}}",
+            f"Document this function by contrasting it with [standard_library_function]: {{code}}",
+            f"Create security-aware documentation highlighting potential vulnerabilities: {{code}}"
         ]
-        selected = prompts[:num_prompts]
-        result = []
-        for prompt in selected:
-            output = self.generate_with_ollama(prompt)
-            result.append({
-                "prompt": prompt,
-                "output": output,
-            })
-        return result
 
-    # def one_shot_prompting(self, code, example, num_prompts):
-    #     """
-    #     One-shot prompting: include a single example before the task.
-    #     """
-    #     prompts = [
-    #         f"Here is one example:\n"
-    #         f"Function:\n{example['input']}\n"
-    #         f"Docstring:\n{example['output']}\n\n"
-    #         f"Now, write a docstring for the following function:\n{code}\n"
-    #         f"Output:", "second_prompt"]
-    #     selected = prompts[:num_prompts]
-    #     result = []
-    #     for prompt in selected:
-    #         result = self.generate_with_ollama(prompt)
-    #     return result
+        # Chain Of Thought Prompts
+        self.chain_of_thought_prompts = [
+            f"Analyze this function step-by-step then write a Google-style docstring: 1) Purpose 2) Parameters 3) Returns 4) Examples 5) Docstring: {{code}}",
+            f"As a senior engineer, document this function through: 1) Understanding logic 2) Identifying inputs/outputs 3) Noting edge cases 4) Writing docs: {{code}}",
+            f"Think through: 1) What does this function do? 2) What does it need? 3) What does it return? 4) Now write professional docs: {{code}}",
+            f"Documentation process: 1) Analyze function signature 2) Understand implementation 3) Note special cases 4) Write Google-style docs: {{code}}",
+            f"Step-by-step: 1) Parse function name 2) Examine parameters 3) Study return value 4) Write complete docstring: {{code}}",
+            f"Reason through: 1) Function purpose 2) Parameter roles 3) Return value meaning 4) Produce documentation: {{code}}",
+            f"As a Python expert, analyze then document: 1) Overall behavior 2) Input requirements 3) Output details 4) Final docstring: {{code}}",
+            f"Systematic documentation: 1) Understand code 2) Identify key aspects 3) Consider usage 4) Write professional docs: {{code}}",
+            f"Professional doc process: 1) Study implementation 2) Note important details 3) Structure information 4) Write Google docs: {{code}}",
+            f"Methodical approach: 1) What problem solves? 2) How implemented? 3) What returns? 4) Write formal docs: {{code}}",
+            f"Code review style: 1) Verify function 2) Check parameters 3) Validate returns 4) Write complete docs: {{code}}",
+            f"Engineering docs: 1) Requirements 2) Design 3) Verification 4) Write specs: {{code}}",
+            f"Teach this function: 1) Concepts needed 2) How it works 3) How to use 4) Write docs: {{code}}",
+            f"Production docs: 1) Business need 2) Technical solution 3) Usage patterns 4) Write formally: {{code}}",
+            f"API documentation: 1) Interface contract 2) Error conditions 3) Examples 4) Write docs: {{code}}",
+            f"Complete analysis: 1) Functional role 2) Data flow 3) Edge cases 4) Write professional docs: {{code}}",
+            f"Deep dive: 1) Code walkthrough 2) Key operations 3) Failure modes 4) Write documentation: {{code}}",
+            f"Quality docs: 1) Correctness 2) Safety 3) Performance 4) Write complete docs: {{code}}",
+            f"Maintainer's view: 1) Evolution path 2) Dependencies 3) Technical debt 4) Write docs: {{code}}",
+            f"Expert documentation: 1) Core algorithm 2) Optimization 3) Tradeoffs 4) Write formal docs: {{code}}"
+        ]
+        
+    # Zero Shot Prompting
+    def zero_shot_prompting(self, code, num_prompts):
+        selected = self.zero_shot_prompts[:num_prompts]
+        return [{
+            "prompt": p.format(code=code),
+            "output": self.generate_with_ollama(p.format(code=code))
+        } for p in selected]
 
     def one_shot_prompting(self, code, examples, num_prompts):
         """
@@ -118,43 +121,16 @@ class PromptTechniques:
             })
         return result
 
+    # Chain Of Thought Prompting
     def chain_of_thought_prompting(self, code_snippet, num_prompts):
-        """
-        Chain-of-thought prompting: presents reasoning steps leading up to the docstring request.
+        selected_prompts = self.chain_of_thought_prompts[:num_prompts]
 
-        Args:
-            code_snippet (str): The Python function to be documented.
-            num_prompts (int): Number of reasoning prompt variations to run.
-
-        Returns:
-            List[Dict]: Each dictionary contains the prompt and the model's output.
-        """
-        # Predefined reasoning chains for variety and testing
-        reasoning_prompts = [
-            "Let's think step by step. What does the function do at a high level? What are its inputs and outputs?",
-            "First, identify the purpose of the function. Next, explain what the parameters are and what the function returns.",
-            "We'll break this down. Start with what the function is named, then explain the body line by line, then construct a docstring.",
-            "Analyze the control flow and data types used in the function. What does this tell you about its purpose?",
-            "To write a good docstring, first summarize what the function accomplishes. Then list the arguments and return value with their roles.",
-            "Examine the function name and logic. How can we describe this to someone unfamiliar with the implementation?",
-            "Think aloud: What problem is this function solving? What assumptions does it make? What should the user know?",
-            "Walk through a sample input and predict the output. Then generalize to explain the function’s behavior.",
-            "Explain each part of the function out loud like you’re teaching it. Then write the docstring to reflect that explanation.",
-            "Describe the function in plain English, then rewrite that as a structured docstring using Google style."
-        ]
-
-        selected_prompts = reasoning_prompts[:num_prompts]
         results = []
-
-        for reasoning in selected_prompts:
-            prompt = (
-                f"Problem: {reasoning}\n\n"
-                f"Here is the function to analyze and document:\n"
-                f"```python\n{code_snippet}\n```\n\n"
-                f"Let's think through this step by step and write a proper Google-style docstring."
-            )
+        for template in selected_prompts:
+            prompt = template.format(code=code_snippet)
             output = self.generate_with_ollama(prompt)
             results.append({
+                "reasoning_framework": template.split('\n')[0][:50] + "...",
                 "prompt": prompt,
                 "model_output": output
             })
