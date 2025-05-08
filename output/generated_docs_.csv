@@ -1,323 +1,568 @@
 filename,repo,file_url,func_name,language,input_code,model,prompt,generated_doc,origin_doc
-sample.csv,gem/oq-engine,https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L81-L106,export_ruptures_csv,python,"def export_ruptures_csv(ekey, dstore):
+tadeck_onetimepass.csv,tadeck/onetimepass,https://github.com/tadeck/onetimepass/blob/ee4b4e1700089757594a5ffee5f24408c864ad00/onetimepass/__init__.py#L44-L68,_is_possible_token,python,"def _is_possible_token(token, token_length=6):
+    """"""Determines if given value is acceptable as a token. Used when validating
+    tokens.
+
+    Currently allows only numeric tokens no longer than 6 chars.
+
+    :param token: token value to be checked
+    :type token: int or str
+    :param token_length: allowed length of token
+    :type token_length: int
+    :return: True if can be a candidate for token, False otherwise
+    :rtype: bool
+
+    >>> _is_possible_token(123456)
+    True
+    >>> _is_possible_token(b'123456')
+    True
+    >>> _is_possible_token(b'abcdef')
+    False
+    >>> _is_possible_token(b'12345678')
+    False
     """"""
-    :param ekey: export key, i.e. a pair (datastore key, fmt)
-    :param dstore: datastore object
+    if not isinstance(token, bytes):
+        token = six.b(str(token))
+    return token.isdigit() and len(token) <= token_length",llama3.2:1b,"As a senior Python engineer, write a professional Google-style docstring for this function: def _is_possible_token(token, token_length=6):
+    """"""Determines if given value is acceptable as a token. Used when validating
+    tokens.
+
+    Currently allows only numeric tokens no longer than 6 chars.
+
+    :param token: token value to be checked
+    :type token: int or str
+    :param token_length: allowed length of token
+    :type token_length: int
+    :return: True if can be a candidate for token, False otherwise
+    :rtype: bool
+
+    >>> _is_possible_token(123456)
+    True
+    >>> _is_possible_token(b'123456')
+    True
+    >>> _is_possible_token(b'abcdef')
+    False
+    >>> _is_possible_token(b'12345678')
+    False
     """"""
-    oq = dstore['oqparam']
-    if 'scenario' in oq.calculation_mode:
-        return []
-    dest = dstore.export_path('ruptures.csv')
-    header = ('rupid multiplicity mag centroid_lon centroid_lat '
-              'centroid_depth trt strike dip rake boundary').split()
-    rows = []
-    for rgetter in gen_rupture_getters(dstore):
-        rups = rgetter.get_ruptures()
-        rup_data = calc.RuptureData(rgetter.trt, rgetter.rlzs_by_gsim)
-        for r in rup_data.to_array(rups):
-            rows.append(
-                (r['rup_id'], r['multiplicity'], r['mag'],
-                 r['lon'], r['lat'], r['depth'],
-                 rgetter.trt, r['strike'], r['dip'], r['rake'],
-                 r['boundary']))
-    rows.sort()  # by rupture serial
-    comment = 'investigation_time=%s, ses_per_logic_tree_path=%s' % (
-        oq.investigation_time, oq.ses_per_logic_tree_path)
-    writers.write_csv(dest, rows, header=header, sep='\t', comment=comment)
-    return [dest]",llama3.2:1b,"[{'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L81-L106', 'func_name': 'export_ruptures_csv', 'language': 'python', 'input_code': 'def export_ruptures_csv(ekey, dstore):\r\n    """"""\r\n    :param ekey: export key, i.e. a pair (datastore key, fmt)\r\n    :param dstore: datastore object\r\n    """"""\r\n    oq = dstore[\'oqparam\']\r\n    if \'scenario\' in oq.calculation_mode:\r\n        return []\r\n    dest = dstore.export_path(\'ruptures.csv\')\r\n    header = (\'rupid multiplicity mag centroid_lon centroid_lat \'\r\n              \'centroid_depth trt strike dip rake boundary\').split()\r\n    rows = []\r\n    for rgetter in gen_rupture_getters(dstore):\r\n        rups = rgetter.get_ruptures()\r\n        rup_data = calc.RuptureData(rgetter.trt, rgetter.rlzs_by_gsim)\r\n        for r in rup_data.to_array(rups):\r\n            rows.append(\r\n                (r[\'rup_id\'], r[\'multiplicity\'], r[\'mag\'],\r\n                 r[\'lon\'], r[\'lat\'], r[\'depth\'],\r\n                 rgetter.trt, r[\'strike\'], r[\'dip\'], r[\'rake\'],\r\n                 r[\'boundary\']))\r\n    rows.sort()  # by rupture serial\r\n    comment = \'investigation_time=%s, ses_per_logic_tree_path=%s\' % (\r\n        oq.investigation_time, oq.ses_per_logic_tree_path)\r\n    writers.write_csv(dest, rows, header=header, sep=\'\\t\', comment=comment)\r\n    return [dest]', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef export_ruptures_csv(ekey: tuple[int, str], dstore: \'DatastoreObjectStore\') -> list:\n    """"""\n    Generates a CSV file containing rupture data for the specified export key.\n\n    :param ekey: A pair (datastore key, fmt) representing the export key.\n    :param dstore: The datastore object to use for exporting ruptures.\n    :return: A list containing the destination filename and path of the exported CSV file.\n    """"""\n    # Get the oqparam calculation mode from the datastore\n    oq = dstore[\'oqparam\']\n\n    # If the calculation mode is in \'scenario\' mode, return an empty list\n    if \'scenario\' in oq.calculation_mode:\n        return []\n\n    # Set the export path for the CSV file\n    dest = dstore.export_path(\'ruptures.csv\')\n\n    # Define the header row for the CSV file\n    header = (\n        \'rupid multiplicity mag centroid_lon centroid_lat \'\n        \'centroid_depth trt strike dip rake boundary\').split()\n\n    # Initialize an empty list to store the rupture rows\n    rows = []\n\n    # Iterate over each rupture getter object (gen_rupture_getters)\n    for rgetter in gen_rupture_getters(dstore):\n        # Get the ruptures from the generator\n        rups = rgetter.get_ruptures()\n\n        # Create a RuptureData object with the relevant parameters\n        rup_data = calc.RuptureData(rgetter.trt, rgetter.rlzs_by_gsim)\n\n        # Iterate over each rupture in the data\n        for r in rup_data.to_array(rups):\n            # Append the row to the list of rows\n            rows.append(\n                (r[\'rup_id\'], r[\'multiplicity\'], r[\'mag\'],\n                 r[\'lon\'], r[\'lat\'], r[\'depth\'],\n                 rgetter.trt, r[\'strike\'], r[\'dip\'], r[\'rake\'],\n                 r[\'boundary\']))\n\n    # Sort the rows by rupture serial\n    rows.sort()\n\n    # Define a comment to include in the CSV file header\n    comment = \'investigation_time=%s, ses_per_logic_tree_path=%s\' % (\n        oq.investigation_time, oq.ses_per_logic_tree_path)\n\n    # Write the CSV file using the writers module\n    writers.write_csv(dest, rows, header=header, sep=\'\\t\', comment=comment)\n    \n    # Return a list containing the destination filename and path\n    return [dest]\n```', 'origin_doc': ':param ekey: export key, i.e. a pair (datastore key, fmt)\r\n    :param dstore: datastore object'}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L223-L235', 'func_name': 'export_hmaps_csv', 'language': 'python', 'input_code': 'def export_hmaps_csv(key, dest, sitemesh, array, comment):\r\n    """"""\r\n    Export the hazard maps of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param dest: name of the exported file\r\n    :param sitemesh: site collection\r\n    :param array: a composite array of dtype hmap_dt\r\n    :param comment: comment to use as header of the exported CSV file\r\n    """"""\r\n    curves = util.compose_arrays(sitemesh, array)\r\n    writers.write_csv(dest, curves, comment=comment)\r\n    return [dest]', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef export_hmaps_csv(\n    key: str,\n    dest: str,\n    sitemesh: str,\n    array: ""composite_array"",\n    comment: str = """"\n) -> list:\n    """"""\n    Export the hazard maps of the given realization into CSV.\n\n    This function generates a CSV file containing the hazard maps for the specified\n    realization, written by the HMP library. The hazard maps are composed from a given\n    composite array and exported to a specific destination file with an optional comment.\n\n    :param key: Output type and export type (string)\n    :param dest: Name of the exported CSV file (string)\n    :param sitemesh: Site collection (string)\n    :param array: Composite array of dtype hmap_dt\n    :param comment: Comment to use as header of the exported CSV file (string, optional)\n    :return: List containing the name of the exported CSV file\n    """"""\n\n    # Curves are generated from the site collection and composite array using util.compose_arrays\n    curves = util.compose_arrays(sitemesh, array)\n\n    # The hazard maps are written to a CSV file using writers.write_csv\n    writers.write_csv(dest, curves, comment=comment)\n\n    # Return a list containing the name of the exported CSV file\n    return [dest]\n```', 'origin_doc': 'Export the hazard maps of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param dest: name of the exported file\r\n    :param sitemesh: site collection\r\n    :param array: a composite array of dtype hmap_dt\r\n    :param comment: comment to use as header of the exported CSV file'}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L238-L245', 'func_name': 'add_imt', 'language': 'python', 'input_code': 'def add_imt(fname, imt):\r\n    """"""\r\n    >>> add_imt(\'/path/to/hcurve_23.csv\', \'SA(0.1)\')\r\n    \'/path/to/hcurve-SA(0.1)_23.csv\'\r\n    """"""\r\n    name = os.path.basename(fname)\r\n    newname = re.sub(r\'(_\\d+\\.)\', \'-%s\\\\1\' % imt, name)\r\n    return os.path.join(os.path.dirname(fname), newname)', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef add_imt(fname: str, imt: str) -> str:\n    """"""\n    Adds a suffix to the given file name in the format \'YYYYMMDD_Hcurve_XXX.csv\'.\n\n    Args:\n        fname (str): The base filename with extension.\n        imt (str): The IMT suffix to be appended.\n\n    Returns:\n        str: The new filename with the appended suffix.\n\n    Raises:\n        ValueError: If the file name does not match the format \'YYYYMMDD_Hcurve_XXX.csv\'.\n\n    Example:\n        >>> add_imt(\'/path/to/hcurve_23.csv\', \'SA(0.1)\')\n        \'/path/to/hcurve-SA(0.1)_23.csv\'\n    """"""\n```\n\nNote: I\'ve added type hints for `fname` and `imt`, followed by a brief description of what each parameter represents, as well as the return value. The docstring also includes an example use case to help illustrate how to call the function.', 'origin_doc': "">>> add_imt('/path/to/hcurve_23.csv', 'SA(0.1)')\r\n    '/path/to/hcurve-SA(0.1)_23.csv'""}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L248-L277', 'func_name': 'export_hcurves_by_imt_csv', 'language': 'python', 'input_code': 'def export_hcurves_by_imt_csv(\r\n        key, kind, rlzs_assoc, fname, sitecol, array, oq, checksum):\r\n    """"""\r\n    Export the curves of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param kind: a string with the kind of output (realization or statistics)\r\n    :param rlzs_assoc: a :class:`openquake.commonlib.source.RlzsAssoc` instance\r\n    :param fname: name of the exported file\r\n    :param sitecol: site collection\r\n    :param array: an array of shape (N, L) and dtype numpy.float32\r\n    :param oq: job.ini parameters\r\n    """"""\r\n    nsites = len(sitecol)\r\n    fnames = []\r\n    for imt, imls in oq.imtls.items():\r\n        slc = oq.imtls(imt)\r\n        dest = add_imt(fname, imt)\r\n        lst = [(\'lon\', F32), (\'lat\', F32), (\'depth\', F32)]\r\n        for iml in imls:\r\n            lst.append((\'poe-%s\' % iml, F32))\r\n        hcurves = numpy.zeros(nsites, lst)\r\n        for sid, lon, lat, dep in zip(\r\n                range(nsites), sitecol.lons, sitecol.lats, sitecol.depths):\r\n            hcurves[sid] = (lon, lat, dep) + tuple(array[sid, slc])\r\n        fnames.append(writers.write_csv(dest, hcurves, comment=_comment(\r\n            rlzs_assoc, kind, oq.investigation_time) + (\r\n                \', imt=""%s"", checksum=%d\' % (imt, checksum)\r\n            ), header=[name for (name, dt) in lst]))\r\n    return fnames', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef export_hcurves_by_imt_csv(\n        key: str, kind: str, rlzs_assoc: object, fname: str, sitecol: object, array: numpy.ndarray,\n        oq: dict) -> list:\n    """"""\n    Export the curves of the given realization into CSV.\n\n    Parameters\n    ----------\n    key : str\n        output_type and export type\n\n    kind : str\n        a string with the kind of output (realization or statistics)\n\n    rlzs_assoc : object\n        an instance of openquake.commonlib.source.RlzsAssoc, containing associated realizations\n\n    fname : str\n        name of the exported file\n\n    sitecol : object\n        site collection\n\n    array : numpy.ndarray, shape (N, L) and dtype numpy.float32\n        an array representing the depths of the given realization\n\n    oq : dict\n        job.ini parameters\n\n    Returns\n    -------\n    list\n        a list of filenames for each exported curve CSV file\n\n    Raises\n    ------\n    TypeError\n        if rlzs_assoc is not an instance of openquake.commonlib.source.RlzsAssoc, or if oq.imtls is empty\n    ValueError\n        if any(imt not in oq.imtls for imt in rlzs_assoc.get(\'imts\', []))\n    """"""\n\n    # Calculate the number of sites and filenames needed for each exported curve CSV file\n    nsites = len(sitecol)\n    fnames = []\n    for imt, imls in oq.imtls.items():\n        # Get the associated realizations\n        slc = oq.imtls(imt)\n        dest = add_imt(fname, imt)\n\n        # Prepare a list of columns for the CSV file\n        lst = [(\'lon\', F32), (\'lat\', F32), (\'depth\', F32)]\n\n        # Add information about each point on the curve to the CSV file\n        for iml in imls:\n            lst.append((\'poe-%s\' % iml, F32))\n\n        # Create an array of shape (nsites, 3) containing the coordinates and depths of each point on the curve\n        hcurves = numpy.zeros(nsites, lst)\n\n        # Add information about each point on the curve to the CSV file\n        for sid, lon, lat, dep in zip(\n                range(nsites), sitecol.lons, sitecol.lats, sitecol.depths):\n            hcurves[sid] = (lon, lat, dep) + tuple(array[sid, slc])\n\n        # Write each CSV file with the exported data\n        fnames.append(writers.write_csv(dest, hcurves, comment=_comment(\n            rlzs_assoc, kind, oq.investigation_time) + ("" imt=""%s"", checksum=%d"" % (imt, checksum)), header=[name for (name, dt) in lst])))\n\n    return fnames\n```', 'origin_doc': 'Export the curves of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param kind: a string with the kind of output (realization or statistics)\r\n    :param rlzs_assoc: a :class:`openquake.commonlib.source.RlzsAssoc` instance\r\n    :param fname: name of the exported file\r\n    :param sitecol: site collection\r\n    :param array: an array of shape (N, L) and dtype numpy.float32\r\n    :param oq: job.ini parameters'}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L280-L294', 'func_name': 'hazard_curve_name', 'language': 'python', 'input_code': 'def hazard_curve_name(dstore, ekey, kind, rlzs_assoc):\r\n    """"""\r\n    :param calc_id: the calculation ID\r\n    :param ekey: the export key\r\n    :param kind: the kind of key\r\n    :param rlzs_assoc: a RlzsAssoc instance\r\n    """"""\r\n    key, fmt = ekey\r\n    prefix = {\'hcurves\': \'hazard_curve\', \'hmaps\': \'hazard_map\',\r\n              \'uhs\': \'hazard_uhs\'}[key]\r\n    if kind.startswith(\'quantile-\'):  # strip the 7 characters \'hazard_\'\r\n        fname = dstore.build_fname(\'quantile_\' + prefix[7:], kind[9:], fmt)\r\n    else:\r\n        fname = dstore.build_fname(prefix, kind, fmt)\r\n    return fname', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef hazard_curve_name(dstore: object, ekey: str, kind: str, rlzs_assoc: object) -> str:\n    """"""\n    Generates the name of a hazard curve based on the export key and kind.\n\n    This function takes in three arguments: `calc_id`, `ekey`, `kind`, and `rlzs_assoc`.\n    It returns the formatted file name for the hazard curve.\n\n    Args:\n        dstore (object): The database store instance to use for building file names.\n        ekey (str): The export key associated with the hazard curve.\n        kind (str): The type of key that corresponds to the hazard curve.\n        rlzs_assoc (object): A RlzsAssoc instance representing the association.\n\n    Returns:\n        str: The formatted file name for the hazard curve.\n\n    Raises:\n        None\n\n    Example:\n        >>> import numpy as np\n        >>> from rlm.utils import hazard_curve_name\n        >>> dstore = ...  # Initialize database store instance\n        >>> ekey = \'hcurves/quantile/hazard_7\'\n        >>> kind = \'quantile\'\n        >>> rlzs_assoc = ...  # Initialize RlzsAssoc instance\n        >>> hazard_curve_name(dstore, ekey, kind, rlzs_assoc)\n        \'/path/to/file_name.hazard_curve\'\n    """"""\n```\n\nThis docstring uses Google-style formatting for consistency and readability. It includes a one-line summary of what the function does, as well as clear and concise information about each argument, return value, and any applicable exceptions. The example demonstrates how to use the function with sample arguments.', 'origin_doc': ':param calc_id: the calculation ID\r\n    :param ekey: the export key\r\n    :param kind: the kind of key\r\n    :param rlzs_assoc: a RlzsAssoc instance'}]","```python
-def export_ruptures_csv(ekey: tuple[int, str], dstore: 'DatastoreObjectStore') -> list:
+    if not isinstance(token, bytes):
+        token = six.b(str(token))
+    return token.isdigit() and len(token) <= token_length","[{'prompt': 'As a senior Python engineer, write a professional Google-style docstring for this function: def _is_possible_token(token, token_length=6):\r\n    """"""Determines if given value is acceptable as a token. Used when validating\r\n    tokens.\r\n\r\n    Currently allows only numeric tokens no longer than 6 chars.\r\n\r\n    :param token: token value to be checked\r\n    :type token: int or str\r\n    :param token_length: allowed length of token\r\n    :type token_length: int\r\n    :return: True if can be a candidate for token, False otherwise\r\n    :rtype: bool\r\n\r\n    >>> _is_possible_token(123456)\r\n    True\r\n    >>> _is_possible_token(b\'123456\')\r\n    True\r\n    >>> _is_possible_token(b\'abcdef\')\r\n    False\r\n    >>> _is_possible_token(b\'12345678\')\r\n    False\r\n    """"""\r\n    if not isinstance(token, bytes):\r\n        token = six.b(str(token))\r\n    return token.isdigit() and len(token) <= token_length', 'output': '```\ndef _is_possible_token(\n    token: int | str,\n    token_length: int = 6\n) -> bool:\n    """"""\n    Determines if a given value is acceptable as a token. Used when validating tokens.\n\n    Currently allows only numeric tokens, no longer than 6 characters in length.\n\n    :param token: The value to be checked for token acceptance.\n    :type token: int or str (number or string)\n    :param token_length: The maximum allowed length of the token.\n    :type token_length: int\n    :return: True if the given token can be a candidate for token, False otherwise.\n    :rtype: bool\n\n    >>> _is_possible_token(123456)\n    True\n    >>> _is_possible_token(b\'123456\')\n    True\n    >>> _is_possible_token(b\'abcdef\')\n    False\n    >>> _is_possible_token(b\'12345678\')\n    False\n    """"""\n\n    # Ensure the input token is a bytes-like object or convert it to one if necessary\n    if not isinstance(token, bytes):\n        token = six.b(str(token))\n\n    # Check if the token is numeric and no longer than 6 characters in length\n    return token.isdigit() and len(token) <= token_length\n```'}]","Determines if given value is acceptable as a token. Used when validating
+    tokens.
+
+    Currently allows only numeric tokens no longer than 6 chars.
+
+    :param token: token value to be checked
+    :type token: int or str
+    :param token_length: allowed length of token
+    :type token_length: int
+    :return: True if can be a candidate for token, False otherwise
+    :rtype: bool
+
+    >>> _is_possible_token(123456)
+    True
+    >>> _is_possible_token(b'123456')
+    True
+    >>> _is_possible_token(b'abcdef')
+    False
+    >>> _is_possible_token(b'12345678')
+    False"
+tadeck_onetimepass.csv,tadeck/onetimepass,https://github.com/tadeck/onetimepass/blob/ee4b4e1700089757594a5ffee5f24408c864ad00/onetimepass/__init__.py#L71-L126,get_hotp,python,"def get_hotp(
+        secret,
+        intervals_no,
+        as_string=False,
+        casefold=True,
+        digest_method=hashlib.sha1,
+        token_length=6,
+):
     """"""
-    Generates a CSV file containing rupture data for the specified export key.
+    Get HMAC-based one-time password on the basis of given secret and
+    interval number.
 
-    :param ekey: A pair (datastore key, fmt) representing the export key.
-    :param dstore: The datastore object to use for exporting ruptures.
-    :return: A list containing the destination filename and path of the exported CSV file.
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str or unicode
+    :param intervals_no: interval number used for getting different tokens, it
+        is incremented with each use
+    :type intervals_no: int
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param casefold: True (default), if should accept also lowercase alphabet
+    :type casefold: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: generated HOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=1)
+    765705
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2)
+    816065
+    >>> result = get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2, as_string=True)
+    >>> result == b'816065'
+    True
     """"""
-    # Get the oqparam calculation mode from the datastore
-    oq = dstore['oqparam']
-
-    # If the calculation mode is in 'scenario' mode, return an empty list
-    if 'scenario' in oq.calculation_mode:
-        return []
-
-    # Set the export path for the CSV file
-    dest = dstore.export_path('ruptures.csv')
-
-    # Define the header row for the CSV file
-    header = (
-        'rupid multiplicity mag centroid_lon centroid_lat '
-        'centroid_depth trt strike dip rake boundary').split()
-
-    # Initialize an empty list to store the rupture rows
-    rows = []
-
-    # Iterate over each rupture getter object (gen_rupture_getters)
-    for rgetter in gen_rupture_getters(dstore):
-        # Get the ruptures from the generator
-        rups = rgetter.get_ruptures()
-
-        # Create a RuptureData object with the relevant parameters
-        rup_data = calc.RuptureData(rgetter.trt, rgetter.rlzs_by_gsim)
-
-        # Iterate over each rupture in the data
-        for r in rup_data.to_array(rups):
-            # Append the row to the list of rows
-            rows.append(
-                (r['rup_id'], r['multiplicity'], r['mag'],
-                 r['lon'], r['lat'], r['depth'],
-                 rgetter.trt, r['strike'], r['dip'], r['rake'],
-                 r['boundary']))
-
-    # Sort the rows by rupture serial
-    rows.sort()
-
-    # Define a comment to include in the CSV file header
-    comment = 'investigation_time=%s, ses_per_logic_tree_path=%s' % (
-        oq.investigation_time, oq.ses_per_logic_tree_path)
-
-    # Write the CSV file using the writers module
-    writers.write_csv(dest, rows, header=header, sep='\t', comment=comment)
-    
-    # Return a list containing the destination filename and path
-    return [dest]
-```",":param ekey: export key, i.e. a pair (datastore key, fmt)
-    :param dstore: datastore object"
-sample.csv,gem/oq-engine,https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L223-L235,export_hmaps_csv,python,"def export_hmaps_csv(key, dest, sitemesh, array, comment):
-    """"""
-    Export the hazard maps of the given realization into CSV.
-
-    :param key: output_type and export_type
-    :param dest: name of the exported file
-    :param sitemesh: site collection
-    :param array: a composite array of dtype hmap_dt
-    :param comment: comment to use as header of the exported CSV file
-    """"""
-    curves = util.compose_arrays(sitemesh, array)
-    writers.write_csv(dest, curves, comment=comment)
-    return [dest]",llama3.2:1b,"[{'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L81-L106', 'func_name': 'export_ruptures_csv', 'language': 'python', 'input_code': 'def export_ruptures_csv(ekey, dstore):\r\n    """"""\r\n    :param ekey: export key, i.e. a pair (datastore key, fmt)\r\n    :param dstore: datastore object\r\n    """"""\r\n    oq = dstore[\'oqparam\']\r\n    if \'scenario\' in oq.calculation_mode:\r\n        return []\r\n    dest = dstore.export_path(\'ruptures.csv\')\r\n    header = (\'rupid multiplicity mag centroid_lon centroid_lat \'\r\n              \'centroid_depth trt strike dip rake boundary\').split()\r\n    rows = []\r\n    for rgetter in gen_rupture_getters(dstore):\r\n        rups = rgetter.get_ruptures()\r\n        rup_data = calc.RuptureData(rgetter.trt, rgetter.rlzs_by_gsim)\r\n        for r in rup_data.to_array(rups):\r\n            rows.append(\r\n                (r[\'rup_id\'], r[\'multiplicity\'], r[\'mag\'],\r\n                 r[\'lon\'], r[\'lat\'], r[\'depth\'],\r\n                 rgetter.trt, r[\'strike\'], r[\'dip\'], r[\'rake\'],\r\n                 r[\'boundary\']))\r\n    rows.sort()  # by rupture serial\r\n    comment = \'investigation_time=%s, ses_per_logic_tree_path=%s\' % (\r\n        oq.investigation_time, oq.ses_per_logic_tree_path)\r\n    writers.write_csv(dest, rows, header=header, sep=\'\\t\', comment=comment)\r\n    return [dest]', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef export_ruptures_csv(ekey: tuple[int, str], dstore: \'DatastoreObjectStore\') -> list:\n    """"""\n    Generates a CSV file containing rupture data for the specified export key.\n\n    :param ekey: A pair (datastore key, fmt) representing the export key.\n    :param dstore: The datastore object to use for exporting ruptures.\n    :return: A list containing the destination filename and path of the exported CSV file.\n    """"""\n    # Get the oqparam calculation mode from the datastore\n    oq = dstore[\'oqparam\']\n\n    # If the calculation mode is in \'scenario\' mode, return an empty list\n    if \'scenario\' in oq.calculation_mode:\n        return []\n\n    # Set the export path for the CSV file\n    dest = dstore.export_path(\'ruptures.csv\')\n\n    # Define the header row for the CSV file\n    header = (\n        \'rupid multiplicity mag centroid_lon centroid_lat \'\n        \'centroid_depth trt strike dip rake boundary\').split()\n\n    # Initialize an empty list to store the rupture rows\n    rows = []\n\n    # Iterate over each rupture getter object (gen_rupture_getters)\n    for rgetter in gen_rupture_getters(dstore):\n        # Get the ruptures from the generator\n        rups = rgetter.get_ruptures()\n\n        # Create a RuptureData object with the relevant parameters\n        rup_data = calc.RuptureData(rgetter.trt, rgetter.rlzs_by_gsim)\n\n        # Iterate over each rupture in the data\n        for r in rup_data.to_array(rups):\n            # Append the row to the list of rows\n            rows.append(\n                (r[\'rup_id\'], r[\'multiplicity\'], r[\'mag\'],\n                 r[\'lon\'], r[\'lat\'], r[\'depth\'],\n                 rgetter.trt, r[\'strike\'], r[\'dip\'], r[\'rake\'],\n                 r[\'boundary\']))\n\n    # Sort the rows by rupture serial\n    rows.sort()\n\n    # Define a comment to include in the CSV file header\n    comment = \'investigation_time=%s, ses_per_logic_tree_path=%s\' % (\n        oq.investigation_time, oq.ses_per_logic_tree_path)\n\n    # Write the CSV file using the writers module\n    writers.write_csv(dest, rows, header=header, sep=\'\\t\', comment=comment)\n    \n    # Return a list containing the destination filename and path\n    return [dest]\n```', 'origin_doc': ':param ekey: export key, i.e. a pair (datastore key, fmt)\r\n    :param dstore: datastore object'}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L223-L235', 'func_name': 'export_hmaps_csv', 'language': 'python', 'input_code': 'def export_hmaps_csv(key, dest, sitemesh, array, comment):\r\n    """"""\r\n    Export the hazard maps of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param dest: name of the exported file\r\n    :param sitemesh: site collection\r\n    :param array: a composite array of dtype hmap_dt\r\n    :param comment: comment to use as header of the exported CSV file\r\n    """"""\r\n    curves = util.compose_arrays(sitemesh, array)\r\n    writers.write_csv(dest, curves, comment=comment)\r\n    return [dest]', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef export_hmaps_csv(\n    key: str,\n    dest: str,\n    sitemesh: str,\n    array: ""composite_array"",\n    comment: str = """"\n) -> list:\n    """"""\n    Export the hazard maps of the given realization into CSV.\n\n    This function generates a CSV file containing the hazard maps for the specified\n    realization, written by the HMP library. The hazard maps are composed from a given\n    composite array and exported to a specific destination file with an optional comment.\n\n    :param key: Output type and export type (string)\n    :param dest: Name of the exported CSV file (string)\n    :param sitemesh: Site collection (string)\n    :param array: Composite array of dtype hmap_dt\n    :param comment: Comment to use as header of the exported CSV file (string, optional)\n    :return: List containing the name of the exported CSV file\n    """"""\n\n    # Curves are generated from the site collection and composite array using util.compose_arrays\n    curves = util.compose_arrays(sitemesh, array)\n\n    # The hazard maps are written to a CSV file using writers.write_csv\n    writers.write_csv(dest, curves, comment=comment)\n\n    # Return a list containing the name of the exported CSV file\n    return [dest]\n```', 'origin_doc': 'Export the hazard maps of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param dest: name of the exported file\r\n    :param sitemesh: site collection\r\n    :param array: a composite array of dtype hmap_dt\r\n    :param comment: comment to use as header of the exported CSV file'}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L238-L245', 'func_name': 'add_imt', 'language': 'python', 'input_code': 'def add_imt(fname, imt):\r\n    """"""\r\n    >>> add_imt(\'/path/to/hcurve_23.csv\', \'SA(0.1)\')\r\n    \'/path/to/hcurve-SA(0.1)_23.csv\'\r\n    """"""\r\n    name = os.path.basename(fname)\r\n    newname = re.sub(r\'(_\\d+\\.)\', \'-%s\\\\1\' % imt, name)\r\n    return os.path.join(os.path.dirname(fname), newname)', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef add_imt(fname: str, imt: str) -> str:\n    """"""\n    Adds a suffix to the given file name in the format \'YYYYMMDD_Hcurve_XXX.csv\'.\n\n    Args:\n        fname (str): The base filename with extension.\n        imt (str): The IMT suffix to be appended.\n\n    Returns:\n        str: The new filename with the appended suffix.\n\n    Raises:\n        ValueError: If the file name does not match the format \'YYYYMMDD_Hcurve_XXX.csv\'.\n\n    Example:\n        >>> add_imt(\'/path/to/hcurve_23.csv\', \'SA(0.1)\')\n        \'/path/to/hcurve-SA(0.1)_23.csv\'\n    """"""\n```\n\nNote: I\'ve added type hints for `fname` and `imt`, followed by a brief description of what each parameter represents, as well as the return value. The docstring also includes an example use case to help illustrate how to call the function.', 'origin_doc': "">>> add_imt('/path/to/hcurve_23.csv', 'SA(0.1)')\r\n    '/path/to/hcurve-SA(0.1)_23.csv'""}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L248-L277', 'func_name': 'export_hcurves_by_imt_csv', 'language': 'python', 'input_code': 'def export_hcurves_by_imt_csv(\r\n        key, kind, rlzs_assoc, fname, sitecol, array, oq, checksum):\r\n    """"""\r\n    Export the curves of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param kind: a string with the kind of output (realization or statistics)\r\n    :param rlzs_assoc: a :class:`openquake.commonlib.source.RlzsAssoc` instance\r\n    :param fname: name of the exported file\r\n    :param sitecol: site collection\r\n    :param array: an array of shape (N, L) and dtype numpy.float32\r\n    :param oq: job.ini parameters\r\n    """"""\r\n    nsites = len(sitecol)\r\n    fnames = []\r\n    for imt, imls in oq.imtls.items():\r\n        slc = oq.imtls(imt)\r\n        dest = add_imt(fname, imt)\r\n        lst = [(\'lon\', F32), (\'lat\', F32), (\'depth\', F32)]\r\n        for iml in imls:\r\n            lst.append((\'poe-%s\' % iml, F32))\r\n        hcurves = numpy.zeros(nsites, lst)\r\n        for sid, lon, lat, dep in zip(\r\n                range(nsites), sitecol.lons, sitecol.lats, sitecol.depths):\r\n            hcurves[sid] = (lon, lat, dep) + tuple(array[sid, slc])\r\n        fnames.append(writers.write_csv(dest, hcurves, comment=_comment(\r\n            rlzs_assoc, kind, oq.investigation_time) + (\r\n                \', imt=""%s"", checksum=%d\' % (imt, checksum)\r\n            ), header=[name for (name, dt) in lst]))\r\n    return fnames', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef export_hcurves_by_imt_csv(\n        key: str, kind: str, rlzs_assoc: object, fname: str, sitecol: object, array: numpy.ndarray,\n        oq: dict) -> list:\n    """"""\n    Export the curves of the given realization into CSV.\n\n    Parameters\n    ----------\n    key : str\n        output_type and export type\n\n    kind : str\n        a string with the kind of output (realization or statistics)\n\n    rlzs_assoc : object\n        an instance of openquake.commonlib.source.RlzsAssoc, containing associated realizations\n\n    fname : str\n        name of the exported file\n\n    sitecol : object\n        site collection\n\n    array : numpy.ndarray, shape (N, L) and dtype numpy.float32\n        an array representing the depths of the given realization\n\n    oq : dict\n        job.ini parameters\n\n    Returns\n    -------\n    list\n        a list of filenames for each exported curve CSV file\n\n    Raises\n    ------\n    TypeError\n        if rlzs_assoc is not an instance of openquake.commonlib.source.RlzsAssoc, or if oq.imtls is empty\n    ValueError\n        if any(imt not in oq.imtls for imt in rlzs_assoc.get(\'imts\', []))\n    """"""\n\n    # Calculate the number of sites and filenames needed for each exported curve CSV file\n    nsites = len(sitecol)\n    fnames = []\n    for imt, imls in oq.imtls.items():\n        # Get the associated realizations\n        slc = oq.imtls(imt)\n        dest = add_imt(fname, imt)\n\n        # Prepare a list of columns for the CSV file\n        lst = [(\'lon\', F32), (\'lat\', F32), (\'depth\', F32)]\n\n        # Add information about each point on the curve to the CSV file\n        for iml in imls:\n            lst.append((\'poe-%s\' % iml, F32))\n\n        # Create an array of shape (nsites, 3) containing the coordinates and depths of each point on the curve\n        hcurves = numpy.zeros(nsites, lst)\n\n        # Add information about each point on the curve to the CSV file\n        for sid, lon, lat, dep in zip(\n                range(nsites), sitecol.lons, sitecol.lats, sitecol.depths):\n            hcurves[sid] = (lon, lat, dep) + tuple(array[sid, slc])\n\n        # Write each CSV file with the exported data\n        fnames.append(writers.write_csv(dest, hcurves, comment=_comment(\n            rlzs_assoc, kind, oq.investigation_time) + ("" imt=""%s"", checksum=%d"" % (imt, checksum)), header=[name for (name, dt) in lst])))\n\n    return fnames\n```', 'origin_doc': 'Export the curves of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param kind: a string with the kind of output (realization or statistics)\r\n    :param rlzs_assoc: a :class:`openquake.commonlib.source.RlzsAssoc` instance\r\n    :param fname: name of the exported file\r\n    :param sitecol: site collection\r\n    :param array: an array of shape (N, L) and dtype numpy.float32\r\n    :param oq: job.ini parameters'}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L280-L294', 'func_name': 'hazard_curve_name', 'language': 'python', 'input_code': 'def hazard_curve_name(dstore, ekey, kind, rlzs_assoc):\r\n    """"""\r\n    :param calc_id: the calculation ID\r\n    :param ekey: the export key\r\n    :param kind: the kind of key\r\n    :param rlzs_assoc: a RlzsAssoc instance\r\n    """"""\r\n    key, fmt = ekey\r\n    prefix = {\'hcurves\': \'hazard_curve\', \'hmaps\': \'hazard_map\',\r\n              \'uhs\': \'hazard_uhs\'}[key]\r\n    if kind.startswith(\'quantile-\'):  # strip the 7 characters \'hazard_\'\r\n        fname = dstore.build_fname(\'quantile_\' + prefix[7:], kind[9:], fmt)\r\n    else:\r\n        fname = dstore.build_fname(prefix, kind, fmt)\r\n    return fname', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef hazard_curve_name(dstore: object, ekey: str, kind: str, rlzs_assoc: object) -> str:\n    """"""\n    Generates the name of a hazard curve based on the export key and kind.\n\n    This function takes in three arguments: `calc_id`, `ekey`, `kind`, and `rlzs_assoc`.\n    It returns the formatted file name for the hazard curve.\n\n    Args:\n        dstore (object): The database store instance to use for building file names.\n        ekey (str): The export key associated with the hazard curve.\n        kind (str): The type of key that corresponds to the hazard curve.\n        rlzs_assoc (object): A RlzsAssoc instance representing the association.\n\n    Returns:\n        str: The formatted file name for the hazard curve.\n\n    Raises:\n        None\n\n    Example:\n        >>> import numpy as np\n        >>> from rlm.utils import hazard_curve_name\n        >>> dstore = ...  # Initialize database store instance\n        >>> ekey = \'hcurves/quantile/hazard_7\'\n        >>> kind = \'quantile\'\n        >>> rlzs_assoc = ...  # Initialize RlzsAssoc instance\n        >>> hazard_curve_name(dstore, ekey, kind, rlzs_assoc)\n        \'/path/to/file_name.hazard_curve\'\n    """"""\n```\n\nThis docstring uses Google-style formatting for consistency and readability. It includes a one-line summary of what the function does, as well as clear and concise information about each argument, return value, and any applicable exceptions. The example demonstrates how to use the function with sample arguments.', 'origin_doc': ':param calc_id: the calculation ID\r\n    :param ekey: the export key\r\n    :param kind: the kind of key\r\n    :param rlzs_assoc: a RlzsAssoc instance'}]","```python
-def export_hmaps_csv(
-    key: str,
-    dest: str,
-    sitemesh: str,
-    array: ""composite_array"",
-    comment: str = """"
-) -> list:
-    """"""
-    Export the hazard maps of the given realization into CSV.
-
-    This function generates a CSV file containing the hazard maps for the specified
-    realization, written by the HMP library. The hazard maps are composed from a given
-    composite array and exported to a specific destination file with an optional comment.
-
-    :param key: Output type and export type (string)
-    :param dest: Name of the exported CSV file (string)
-    :param sitemesh: Site collection (string)
-    :param array: Composite array of dtype hmap_dt
-    :param comment: Comment to use as header of the exported CSV file (string, optional)
-    :return: List containing the name of the exported CSV file
-    """"""
-
-    # Curves are generated from the site collection and composite array using util.compose_arrays
-    curves = util.compose_arrays(sitemesh, array)
-
-    # The hazard maps are written to a CSV file using writers.write_csv
-    writers.write_csv(dest, curves, comment=comment)
-
-    # Return a list containing the name of the exported CSV file
-    return [dest]
-```","Export the hazard maps of the given realization into CSV.
-
-    :param key: output_type and export_type
-    :param dest: name of the exported file
-    :param sitemesh: site collection
-    :param array: a composite array of dtype hmap_dt
-    :param comment: comment to use as header of the exported CSV file"
-sample.csv,gem/oq-engine,https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L238-L245,add_imt,python,"def add_imt(fname, imt):
-    """"""
-    >>> add_imt('/path/to/hcurve_23.csv', 'SA(0.1)')
-    '/path/to/hcurve-SA(0.1)_23.csv'
-    """"""
-    name = os.path.basename(fname)
-    newname = re.sub(r'(_\d+\.)', '-%s\\1' % imt, name)
-    return os.path.join(os.path.dirname(fname), newname)",llama3.2:1b,"[{'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L81-L106', 'func_name': 'export_ruptures_csv', 'language': 'python', 'input_code': 'def export_ruptures_csv(ekey, dstore):\r\n    """"""\r\n    :param ekey: export key, i.e. a pair (datastore key, fmt)\r\n    :param dstore: datastore object\r\n    """"""\r\n    oq = dstore[\'oqparam\']\r\n    if \'scenario\' in oq.calculation_mode:\r\n        return []\r\n    dest = dstore.export_path(\'ruptures.csv\')\r\n    header = (\'rupid multiplicity mag centroid_lon centroid_lat \'\r\n              \'centroid_depth trt strike dip rake boundary\').split()\r\n    rows = []\r\n    for rgetter in gen_rupture_getters(dstore):\r\n        rups = rgetter.get_ruptures()\r\n        rup_data = calc.RuptureData(rgetter.trt, rgetter.rlzs_by_gsim)\r\n        for r in rup_data.to_array(rups):\r\n            rows.append(\r\n                (r[\'rup_id\'], r[\'multiplicity\'], r[\'mag\'],\r\n                 r[\'lon\'], r[\'lat\'], r[\'depth\'],\r\n                 rgetter.trt, r[\'strike\'], r[\'dip\'], r[\'rake\'],\r\n                 r[\'boundary\']))\r\n    rows.sort()  # by rupture serial\r\n    comment = \'investigation_time=%s, ses_per_logic_tree_path=%s\' % (\r\n        oq.investigation_time, oq.ses_per_logic_tree_path)\r\n    writers.write_csv(dest, rows, header=header, sep=\'\\t\', comment=comment)\r\n    return [dest]', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef export_ruptures_csv(ekey: tuple[int, str], dstore: \'DatastoreObjectStore\') -> list:\n    """"""\n    Generates a CSV file containing rupture data for the specified export key.\n\n    :param ekey: A pair (datastore key, fmt) representing the export key.\n    :param dstore: The datastore object to use for exporting ruptures.\n    :return: A list containing the destination filename and path of the exported CSV file.\n    """"""\n    # Get the oqparam calculation mode from the datastore\n    oq = dstore[\'oqparam\']\n\n    # If the calculation mode is in \'scenario\' mode, return an empty list\n    if \'scenario\' in oq.calculation_mode:\n        return []\n\n    # Set the export path for the CSV file\n    dest = dstore.export_path(\'ruptures.csv\')\n\n    # Define the header row for the CSV file\n    header = (\n        \'rupid multiplicity mag centroid_lon centroid_lat \'\n        \'centroid_depth trt strike dip rake boundary\').split()\n\n    # Initialize an empty list to store the rupture rows\n    rows = []\n\n    # Iterate over each rupture getter object (gen_rupture_getters)\n    for rgetter in gen_rupture_getters(dstore):\n        # Get the ruptures from the generator\n        rups = rgetter.get_ruptures()\n\n        # Create a RuptureData object with the relevant parameters\n        rup_data = calc.RuptureData(rgetter.trt, rgetter.rlzs_by_gsim)\n\n        # Iterate over each rupture in the data\n        for r in rup_data.to_array(rups):\n            # Append the row to the list of rows\n            rows.append(\n                (r[\'rup_id\'], r[\'multiplicity\'], r[\'mag\'],\n                 r[\'lon\'], r[\'lat\'], r[\'depth\'],\n                 rgetter.trt, r[\'strike\'], r[\'dip\'], r[\'rake\'],\n                 r[\'boundary\']))\n\n    # Sort the rows by rupture serial\n    rows.sort()\n\n    # Define a comment to include in the CSV file header\n    comment = \'investigation_time=%s, ses_per_logic_tree_path=%s\' % (\n        oq.investigation_time, oq.ses_per_logic_tree_path)\n\n    # Write the CSV file using the writers module\n    writers.write_csv(dest, rows, header=header, sep=\'\\t\', comment=comment)\n    \n    # Return a list containing the destination filename and path\n    return [dest]\n```', 'origin_doc': ':param ekey: export key, i.e. a pair (datastore key, fmt)\r\n    :param dstore: datastore object'}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L223-L235', 'func_name': 'export_hmaps_csv', 'language': 'python', 'input_code': 'def export_hmaps_csv(key, dest, sitemesh, array, comment):\r\n    """"""\r\n    Export the hazard maps of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param dest: name of the exported file\r\n    :param sitemesh: site collection\r\n    :param array: a composite array of dtype hmap_dt\r\n    :param comment: comment to use as header of the exported CSV file\r\n    """"""\r\n    curves = util.compose_arrays(sitemesh, array)\r\n    writers.write_csv(dest, curves, comment=comment)\r\n    return [dest]', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef export_hmaps_csv(\n    key: str,\n    dest: str,\n    sitemesh: str,\n    array: ""composite_array"",\n    comment: str = """"\n) -> list:\n    """"""\n    Export the hazard maps of the given realization into CSV.\n\n    This function generates a CSV file containing the hazard maps for the specified\n    realization, written by the HMP library. The hazard maps are composed from a given\n    composite array and exported to a specific destination file with an optional comment.\n\n    :param key: Output type and export type (string)\n    :param dest: Name of the exported CSV file (string)\n    :param sitemesh: Site collection (string)\n    :param array: Composite array of dtype hmap_dt\n    :param comment: Comment to use as header of the exported CSV file (string, optional)\n    :return: List containing the name of the exported CSV file\n    """"""\n\n    # Curves are generated from the site collection and composite array using util.compose_arrays\n    curves = util.compose_arrays(sitemesh, array)\n\n    # The hazard maps are written to a CSV file using writers.write_csv\n    writers.write_csv(dest, curves, comment=comment)\n\n    # Return a list containing the name of the exported CSV file\n    return [dest]\n```', 'origin_doc': 'Export the hazard maps of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param dest: name of the exported file\r\n    :param sitemesh: site collection\r\n    :param array: a composite array of dtype hmap_dt\r\n    :param comment: comment to use as header of the exported CSV file'}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L238-L245', 'func_name': 'add_imt', 'language': 'python', 'input_code': 'def add_imt(fname, imt):\r\n    """"""\r\n    >>> add_imt(\'/path/to/hcurve_23.csv\', \'SA(0.1)\')\r\n    \'/path/to/hcurve-SA(0.1)_23.csv\'\r\n    """"""\r\n    name = os.path.basename(fname)\r\n    newname = re.sub(r\'(_\\d+\\.)\', \'-%s\\\\1\' % imt, name)\r\n    return os.path.join(os.path.dirname(fname), newname)', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef add_imt(fname: str, imt: str) -> str:\n    """"""\n    Adds a suffix to the given file name in the format \'YYYYMMDD_Hcurve_XXX.csv\'.\n\n    Args:\n        fname (str): The base filename with extension.\n        imt (str): The IMT suffix to be appended.\n\n    Returns:\n        str: The new filename with the appended suffix.\n\n    Raises:\n        ValueError: If the file name does not match the format \'YYYYMMDD_Hcurve_XXX.csv\'.\n\n    Example:\n        >>> add_imt(\'/path/to/hcurve_23.csv\', \'SA(0.1)\')\n        \'/path/to/hcurve-SA(0.1)_23.csv\'\n    """"""\n```\n\nNote: I\'ve added type hints for `fname` and `imt`, followed by a brief description of what each parameter represents, as well as the return value. The docstring also includes an example use case to help illustrate how to call the function.', 'origin_doc': "">>> add_imt('/path/to/hcurve_23.csv', 'SA(0.1)')\r\n    '/path/to/hcurve-SA(0.1)_23.csv'""}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L248-L277', 'func_name': 'export_hcurves_by_imt_csv', 'language': 'python', 'input_code': 'def export_hcurves_by_imt_csv(\r\n        key, kind, rlzs_assoc, fname, sitecol, array, oq, checksum):\r\n    """"""\r\n    Export the curves of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param kind: a string with the kind of output (realization or statistics)\r\n    :param rlzs_assoc: a :class:`openquake.commonlib.source.RlzsAssoc` instance\r\n    :param fname: name of the exported file\r\n    :param sitecol: site collection\r\n    :param array: an array of shape (N, L) and dtype numpy.float32\r\n    :param oq: job.ini parameters\r\n    """"""\r\n    nsites = len(sitecol)\r\n    fnames = []\r\n    for imt, imls in oq.imtls.items():\r\n        slc = oq.imtls(imt)\r\n        dest = add_imt(fname, imt)\r\n        lst = [(\'lon\', F32), (\'lat\', F32), (\'depth\', F32)]\r\n        for iml in imls:\r\n            lst.append((\'poe-%s\' % iml, F32))\r\n        hcurves = numpy.zeros(nsites, lst)\r\n        for sid, lon, lat, dep in zip(\r\n                range(nsites), sitecol.lons, sitecol.lats, sitecol.depths):\r\n            hcurves[sid] = (lon, lat, dep) + tuple(array[sid, slc])\r\n        fnames.append(writers.write_csv(dest, hcurves, comment=_comment(\r\n            rlzs_assoc, kind, oq.investigation_time) + (\r\n                \', imt=""%s"", checksum=%d\' % (imt, checksum)\r\n            ), header=[name for (name, dt) in lst]))\r\n    return fnames', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef export_hcurves_by_imt_csv(\n        key: str, kind: str, rlzs_assoc: object, fname: str, sitecol: object, array: numpy.ndarray,\n        oq: dict) -> list:\n    """"""\n    Export the curves of the given realization into CSV.\n\n    Parameters\n    ----------\n    key : str\n        output_type and export type\n\n    kind : str\n        a string with the kind of output (realization or statistics)\n\n    rlzs_assoc : object\n        an instance of openquake.commonlib.source.RlzsAssoc, containing associated realizations\n\n    fname : str\n        name of the exported file\n\n    sitecol : object\n        site collection\n\n    array : numpy.ndarray, shape (N, L) and dtype numpy.float32\n        an array representing the depths of the given realization\n\n    oq : dict\n        job.ini parameters\n\n    Returns\n    -------\n    list\n        a list of filenames for each exported curve CSV file\n\n    Raises\n    ------\n    TypeError\n        if rlzs_assoc is not an instance of openquake.commonlib.source.RlzsAssoc, or if oq.imtls is empty\n    ValueError\n        if any(imt not in oq.imtls for imt in rlzs_assoc.get(\'imts\', []))\n    """"""\n\n    # Calculate the number of sites and filenames needed for each exported curve CSV file\n    nsites = len(sitecol)\n    fnames = []\n    for imt, imls in oq.imtls.items():\n        # Get the associated realizations\n        slc = oq.imtls(imt)\n        dest = add_imt(fname, imt)\n\n        # Prepare a list of columns for the CSV file\n        lst = [(\'lon\', F32), (\'lat\', F32), (\'depth\', F32)]\n\n        # Add information about each point on the curve to the CSV file\n        for iml in imls:\n            lst.append((\'poe-%s\' % iml, F32))\n\n        # Create an array of shape (nsites, 3) containing the coordinates and depths of each point on the curve\n        hcurves = numpy.zeros(nsites, lst)\n\n        # Add information about each point on the curve to the CSV file\n        for sid, lon, lat, dep in zip(\n                range(nsites), sitecol.lons, sitecol.lats, sitecol.depths):\n            hcurves[sid] = (lon, lat, dep) + tuple(array[sid, slc])\n\n        # Write each CSV file with the exported data\n        fnames.append(writers.write_csv(dest, hcurves, comment=_comment(\n            rlzs_assoc, kind, oq.investigation_time) + ("" imt=""%s"", checksum=%d"" % (imt, checksum)), header=[name for (name, dt) in lst])))\n\n    return fnames\n```', 'origin_doc': 'Export the curves of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param kind: a string with the kind of output (realization or statistics)\r\n    :param rlzs_assoc: a :class:`openquake.commonlib.source.RlzsAssoc` instance\r\n    :param fname: name of the exported file\r\n    :param sitecol: site collection\r\n    :param array: an array of shape (N, L) and dtype numpy.float32\r\n    :param oq: job.ini parameters'}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L280-L294', 'func_name': 'hazard_curve_name', 'language': 'python', 'input_code': 'def hazard_curve_name(dstore, ekey, kind, rlzs_assoc):\r\n    """"""\r\n    :param calc_id: the calculation ID\r\n    :param ekey: the export key\r\n    :param kind: the kind of key\r\n    :param rlzs_assoc: a RlzsAssoc instance\r\n    """"""\r\n    key, fmt = ekey\r\n    prefix = {\'hcurves\': \'hazard_curve\', \'hmaps\': \'hazard_map\',\r\n              \'uhs\': \'hazard_uhs\'}[key]\r\n    if kind.startswith(\'quantile-\'):  # strip the 7 characters \'hazard_\'\r\n        fname = dstore.build_fname(\'quantile_\' + prefix[7:], kind[9:], fmt)\r\n    else:\r\n        fname = dstore.build_fname(prefix, kind, fmt)\r\n    return fname', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef hazard_curve_name(dstore: object, ekey: str, kind: str, rlzs_assoc: object) -> str:\n    """"""\n    Generates the name of a hazard curve based on the export key and kind.\n\n    This function takes in three arguments: `calc_id`, `ekey`, `kind`, and `rlzs_assoc`.\n    It returns the formatted file name for the hazard curve.\n\n    Args:\n        dstore (object): The database store instance to use for building file names.\n        ekey (str): The export key associated with the hazard curve.\n        kind (str): The type of key that corresponds to the hazard curve.\n        rlzs_assoc (object): A RlzsAssoc instance representing the association.\n\n    Returns:\n        str: The formatted file name for the hazard curve.\n\n    Raises:\n        None\n\n    Example:\n        >>> import numpy as np\n        >>> from rlm.utils import hazard_curve_name\n        >>> dstore = ...  # Initialize database store instance\n        >>> ekey = \'hcurves/quantile/hazard_7\'\n        >>> kind = \'quantile\'\n        >>> rlzs_assoc = ...  # Initialize RlzsAssoc instance\n        >>> hazard_curve_name(dstore, ekey, kind, rlzs_assoc)\n        \'/path/to/file_name.hazard_curve\'\n    """"""\n```\n\nThis docstring uses Google-style formatting for consistency and readability. It includes a one-line summary of what the function does, as well as clear and concise information about each argument, return value, and any applicable exceptions. The example demonstrates how to use the function with sample arguments.', 'origin_doc': ':param calc_id: the calculation ID\r\n    :param ekey: the export key\r\n    :param kind: the kind of key\r\n    :param rlzs_assoc: a RlzsAssoc instance'}]","```python
-def add_imt(fname: str, imt: str) -> str:
-    """"""
-    Adds a suffix to the given file name in the format 'YYYYMMDD_Hcurve_XXX.csv'.
-
-    Args:
-        fname (str): The base filename with extension.
-        imt (str): The IMT suffix to be appended.
-
-    Returns:
-        str: The new filename with the appended suffix.
-
-    Raises:
-        ValueError: If the file name does not match the format 'YYYYMMDD_Hcurve_XXX.csv'.
-
-    Example:
-        >>> add_imt('/path/to/hcurve_23.csv', 'SA(0.1)')
-        '/path/to/hcurve-SA(0.1)_23.csv'
-    """"""
-```
-
-Note: I've added type hints for `fname` and `imt`, followed by a brief description of what each parameter represents, as well as the return value. The docstring also includes an example use case to help illustrate how to call the function.",">>> add_imt('/path/to/hcurve_23.csv', 'SA(0.1)')
-    '/path/to/hcurve-SA(0.1)_23.csv'"
-sample.csv,gem/oq-engine,https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L248-L277,export_hcurves_by_imt_csv,python,"def export_hcurves_by_imt_csv(
-        key, kind, rlzs_assoc, fname, sitecol, array, oq, checksum):
-    """"""
-    Export the curves of the given realization into CSV.
-
-    :param key: output_type and export_type
-    :param kind: a string with the kind of output (realization or statistics)
-    :param rlzs_assoc: a :class:`openquake.commonlib.source.RlzsAssoc` instance
-    :param fname: name of the exported file
-    :param sitecol: site collection
-    :param array: an array of shape (N, L) and dtype numpy.float32
-    :param oq: job.ini parameters
-    """"""
-    nsites = len(sitecol)
-    fnames = []
-    for imt, imls in oq.imtls.items():
-        slc = oq.imtls(imt)
-        dest = add_imt(fname, imt)
-        lst = [('lon', F32), ('lat', F32), ('depth', F32)]
-        for iml in imls:
-            lst.append(('poe-%s' % iml, F32))
-        hcurves = numpy.zeros(nsites, lst)
-        for sid, lon, lat, dep in zip(
-                range(nsites), sitecol.lons, sitecol.lats, sitecol.depths):
-            hcurves[sid] = (lon, lat, dep) + tuple(array[sid, slc])
-        fnames.append(writers.write_csv(dest, hcurves, comment=_comment(
-            rlzs_assoc, kind, oq.investigation_time) + (
-                ', imt=""%s"", checksum=%d' % (imt, checksum)
-            ), header=[name for (name, dt) in lst]))
-    return fnames",llama3.2:1b,"[{'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L81-L106', 'func_name': 'export_ruptures_csv', 'language': 'python', 'input_code': 'def export_ruptures_csv(ekey, dstore):\r\n    """"""\r\n    :param ekey: export key, i.e. a pair (datastore key, fmt)\r\n    :param dstore: datastore object\r\n    """"""\r\n    oq = dstore[\'oqparam\']\r\n    if \'scenario\' in oq.calculation_mode:\r\n        return []\r\n    dest = dstore.export_path(\'ruptures.csv\')\r\n    header = (\'rupid multiplicity mag centroid_lon centroid_lat \'\r\n              \'centroid_depth trt strike dip rake boundary\').split()\r\n    rows = []\r\n    for rgetter in gen_rupture_getters(dstore):\r\n        rups = rgetter.get_ruptures()\r\n        rup_data = calc.RuptureData(rgetter.trt, rgetter.rlzs_by_gsim)\r\n        for r in rup_data.to_array(rups):\r\n            rows.append(\r\n                (r[\'rup_id\'], r[\'multiplicity\'], r[\'mag\'],\r\n                 r[\'lon\'], r[\'lat\'], r[\'depth\'],\r\n                 rgetter.trt, r[\'strike\'], r[\'dip\'], r[\'rake\'],\r\n                 r[\'boundary\']))\r\n    rows.sort()  # by rupture serial\r\n    comment = \'investigation_time=%s, ses_per_logic_tree_path=%s\' % (\r\n        oq.investigation_time, oq.ses_per_logic_tree_path)\r\n    writers.write_csv(dest, rows, header=header, sep=\'\\t\', comment=comment)\r\n    return [dest]', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef export_ruptures_csv(ekey: tuple[int, str], dstore: \'DatastoreObjectStore\') -> list:\n    """"""\n    Generates a CSV file containing rupture data for the specified export key.\n\n    :param ekey: A pair (datastore key, fmt) representing the export key.\n    :param dstore: The datastore object to use for exporting ruptures.\n    :return: A list containing the destination filename and path of the exported CSV file.\n    """"""\n    # Get the oqparam calculation mode from the datastore\n    oq = dstore[\'oqparam\']\n\n    # If the calculation mode is in \'scenario\' mode, return an empty list\n    if \'scenario\' in oq.calculation_mode:\n        return []\n\n    # Set the export path for the CSV file\n    dest = dstore.export_path(\'ruptures.csv\')\n\n    # Define the header row for the CSV file\n    header = (\n        \'rupid multiplicity mag centroid_lon centroid_lat \'\n        \'centroid_depth trt strike dip rake boundary\').split()\n\n    # Initialize an empty list to store the rupture rows\n    rows = []\n\n    # Iterate over each rupture getter object (gen_rupture_getters)\n    for rgetter in gen_rupture_getters(dstore):\n        # Get the ruptures from the generator\n        rups = rgetter.get_ruptures()\n\n        # Create a RuptureData object with the relevant parameters\n        rup_data = calc.RuptureData(rgetter.trt, rgetter.rlzs_by_gsim)\n\n        # Iterate over each rupture in the data\n        for r in rup_data.to_array(rups):\n            # Append the row to the list of rows\n            rows.append(\n                (r[\'rup_id\'], r[\'multiplicity\'], r[\'mag\'],\n                 r[\'lon\'], r[\'lat\'], r[\'depth\'],\n                 rgetter.trt, r[\'strike\'], r[\'dip\'], r[\'rake\'],\n                 r[\'boundary\']))\n\n    # Sort the rows by rupture serial\n    rows.sort()\n\n    # Define a comment to include in the CSV file header\n    comment = \'investigation_time=%s, ses_per_logic_tree_path=%s\' % (\n        oq.investigation_time, oq.ses_per_logic_tree_path)\n\n    # Write the CSV file using the writers module\n    writers.write_csv(dest, rows, header=header, sep=\'\\t\', comment=comment)\n    \n    # Return a list containing the destination filename and path\n    return [dest]\n```', 'origin_doc': ':param ekey: export key, i.e. a pair (datastore key, fmt)\r\n    :param dstore: datastore object'}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L223-L235', 'func_name': 'export_hmaps_csv', 'language': 'python', 'input_code': 'def export_hmaps_csv(key, dest, sitemesh, array, comment):\r\n    """"""\r\n    Export the hazard maps of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param dest: name of the exported file\r\n    :param sitemesh: site collection\r\n    :param array: a composite array of dtype hmap_dt\r\n    :param comment: comment to use as header of the exported CSV file\r\n    """"""\r\n    curves = util.compose_arrays(sitemesh, array)\r\n    writers.write_csv(dest, curves, comment=comment)\r\n    return [dest]', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef export_hmaps_csv(\n    key: str,\n    dest: str,\n    sitemesh: str,\n    array: ""composite_array"",\n    comment: str = """"\n) -> list:\n    """"""\n    Export the hazard maps of the given realization into CSV.\n\n    This function generates a CSV file containing the hazard maps for the specified\n    realization, written by the HMP library. The hazard maps are composed from a given\n    composite array and exported to a specific destination file with an optional comment.\n\n    :param key: Output type and export type (string)\n    :param dest: Name of the exported CSV file (string)\n    :param sitemesh: Site collection (string)\n    :param array: Composite array of dtype hmap_dt\n    :param comment: Comment to use as header of the exported CSV file (string, optional)\n    :return: List containing the name of the exported CSV file\n    """"""\n\n    # Curves are generated from the site collection and composite array using util.compose_arrays\n    curves = util.compose_arrays(sitemesh, array)\n\n    # The hazard maps are written to a CSV file using writers.write_csv\n    writers.write_csv(dest, curves, comment=comment)\n\n    # Return a list containing the name of the exported CSV file\n    return [dest]\n```', 'origin_doc': 'Export the hazard maps of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param dest: name of the exported file\r\n    :param sitemesh: site collection\r\n    :param array: a composite array of dtype hmap_dt\r\n    :param comment: comment to use as header of the exported CSV file'}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L238-L245', 'func_name': 'add_imt', 'language': 'python', 'input_code': 'def add_imt(fname, imt):\r\n    """"""\r\n    >>> add_imt(\'/path/to/hcurve_23.csv\', \'SA(0.1)\')\r\n    \'/path/to/hcurve-SA(0.1)_23.csv\'\r\n    """"""\r\n    name = os.path.basename(fname)\r\n    newname = re.sub(r\'(_\\d+\\.)\', \'-%s\\\\1\' % imt, name)\r\n    return os.path.join(os.path.dirname(fname), newname)', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef add_imt(fname: str, imt: str) -> str:\n    """"""\n    Adds a suffix to the given file name in the format \'YYYYMMDD_Hcurve_XXX.csv\'.\n\n    Args:\n        fname (str): The base filename with extension.\n        imt (str): The IMT suffix to be appended.\n\n    Returns:\n        str: The new filename with the appended suffix.\n\n    Raises:\n        ValueError: If the file name does not match the format \'YYYYMMDD_Hcurve_XXX.csv\'.\n\n    Example:\n        >>> add_imt(\'/path/to/hcurve_23.csv\', \'SA(0.1)\')\n        \'/path/to/hcurve-SA(0.1)_23.csv\'\n    """"""\n```\n\nNote: I\'ve added type hints for `fname` and `imt`, followed by a brief description of what each parameter represents, as well as the return value. The docstring also includes an example use case to help illustrate how to call the function.', 'origin_doc': "">>> add_imt('/path/to/hcurve_23.csv', 'SA(0.1)')\r\n    '/path/to/hcurve-SA(0.1)_23.csv'""}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L248-L277', 'func_name': 'export_hcurves_by_imt_csv', 'language': 'python', 'input_code': 'def export_hcurves_by_imt_csv(\r\n        key, kind, rlzs_assoc, fname, sitecol, array, oq, checksum):\r\n    """"""\r\n    Export the curves of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param kind: a string with the kind of output (realization or statistics)\r\n    :param rlzs_assoc: a :class:`openquake.commonlib.source.RlzsAssoc` instance\r\n    :param fname: name of the exported file\r\n    :param sitecol: site collection\r\n    :param array: an array of shape (N, L) and dtype numpy.float32\r\n    :param oq: job.ini parameters\r\n    """"""\r\n    nsites = len(sitecol)\r\n    fnames = []\r\n    for imt, imls in oq.imtls.items():\r\n        slc = oq.imtls(imt)\r\n        dest = add_imt(fname, imt)\r\n        lst = [(\'lon\', F32), (\'lat\', F32), (\'depth\', F32)]\r\n        for iml in imls:\r\n            lst.append((\'poe-%s\' % iml, F32))\r\n        hcurves = numpy.zeros(nsites, lst)\r\n        for sid, lon, lat, dep in zip(\r\n                range(nsites), sitecol.lons, sitecol.lats, sitecol.depths):\r\n            hcurves[sid] = (lon, lat, dep) + tuple(array[sid, slc])\r\n        fnames.append(writers.write_csv(dest, hcurves, comment=_comment(\r\n            rlzs_assoc, kind, oq.investigation_time) + (\r\n                \', imt=""%s"", checksum=%d\' % (imt, checksum)\r\n            ), header=[name for (name, dt) in lst]))\r\n    return fnames', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef export_hcurves_by_imt_csv(\n        key: str, kind: str, rlzs_assoc: object, fname: str, sitecol: object, array: numpy.ndarray,\n        oq: dict) -> list:\n    """"""\n    Export the curves of the given realization into CSV.\n\n    Parameters\n    ----------\n    key : str\n        output_type and export type\n\n    kind : str\n        a string with the kind of output (realization or statistics)\n\n    rlzs_assoc : object\n        an instance of openquake.commonlib.source.RlzsAssoc, containing associated realizations\n\n    fname : str\n        name of the exported file\n\n    sitecol : object\n        site collection\n\n    array : numpy.ndarray, shape (N, L) and dtype numpy.float32\n        an array representing the depths of the given realization\n\n    oq : dict\n        job.ini parameters\n\n    Returns\n    -------\n    list\n        a list of filenames for each exported curve CSV file\n\n    Raises\n    ------\n    TypeError\n        if rlzs_assoc is not an instance of openquake.commonlib.source.RlzsAssoc, or if oq.imtls is empty\n    ValueError\n        if any(imt not in oq.imtls for imt in rlzs_assoc.get(\'imts\', []))\n    """"""\n\n    # Calculate the number of sites and filenames needed for each exported curve CSV file\n    nsites = len(sitecol)\n    fnames = []\n    for imt, imls in oq.imtls.items():\n        # Get the associated realizations\n        slc = oq.imtls(imt)\n        dest = add_imt(fname, imt)\n\n        # Prepare a list of columns for the CSV file\n        lst = [(\'lon\', F32), (\'lat\', F32), (\'depth\', F32)]\n\n        # Add information about each point on the curve to the CSV file\n        for iml in imls:\n            lst.append((\'poe-%s\' % iml, F32))\n\n        # Create an array of shape (nsites, 3) containing the coordinates and depths of each point on the curve\n        hcurves = numpy.zeros(nsites, lst)\n\n        # Add information about each point on the curve to the CSV file\n        for sid, lon, lat, dep in zip(\n                range(nsites), sitecol.lons, sitecol.lats, sitecol.depths):\n            hcurves[sid] = (lon, lat, dep) + tuple(array[sid, slc])\n\n        # Write each CSV file with the exported data\n        fnames.append(writers.write_csv(dest, hcurves, comment=_comment(\n            rlzs_assoc, kind, oq.investigation_time) + ("" imt=""%s"", checksum=%d"" % (imt, checksum)), header=[name for (name, dt) in lst])))\n\n    return fnames\n```', 'origin_doc': 'Export the curves of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param kind: a string with the kind of output (realization or statistics)\r\n    :param rlzs_assoc: a :class:`openquake.commonlib.source.RlzsAssoc` instance\r\n    :param fname: name of the exported file\r\n    :param sitecol: site collection\r\n    :param array: an array of shape (N, L) and dtype numpy.float32\r\n    :param oq: job.ini parameters'}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L280-L294', 'func_name': 'hazard_curve_name', 'language': 'python', 'input_code': 'def hazard_curve_name(dstore, ekey, kind, rlzs_assoc):\r\n    """"""\r\n    :param calc_id: the calculation ID\r\n    :param ekey: the export key\r\n    :param kind: the kind of key\r\n    :param rlzs_assoc: a RlzsAssoc instance\r\n    """"""\r\n    key, fmt = ekey\r\n    prefix = {\'hcurves\': \'hazard_curve\', \'hmaps\': \'hazard_map\',\r\n              \'uhs\': \'hazard_uhs\'}[key]\r\n    if kind.startswith(\'quantile-\'):  # strip the 7 characters \'hazard_\'\r\n        fname = dstore.build_fname(\'quantile_\' + prefix[7:], kind[9:], fmt)\r\n    else:\r\n        fname = dstore.build_fname(prefix, kind, fmt)\r\n    return fname', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef hazard_curve_name(dstore: object, ekey: str, kind: str, rlzs_assoc: object) -> str:\n    """"""\n    Generates the name of a hazard curve based on the export key and kind.\n\n    This function takes in three arguments: `calc_id`, `ekey`, `kind`, and `rlzs_assoc`.\n    It returns the formatted file name for the hazard curve.\n\n    Args:\n        dstore (object): The database store instance to use for building file names.\n        ekey (str): The export key associated with the hazard curve.\n        kind (str): The type of key that corresponds to the hazard curve.\n        rlzs_assoc (object): A RlzsAssoc instance representing the association.\n\n    Returns:\n        str: The formatted file name for the hazard curve.\n\n    Raises:\n        None\n\n    Example:\n        >>> import numpy as np\n        >>> from rlm.utils import hazard_curve_name\n        >>> dstore = ...  # Initialize database store instance\n        >>> ekey = \'hcurves/quantile/hazard_7\'\n        >>> kind = \'quantile\'\n        >>> rlzs_assoc = ...  # Initialize RlzsAssoc instance\n        >>> hazard_curve_name(dstore, ekey, kind, rlzs_assoc)\n        \'/path/to/file_name.hazard_curve\'\n    """"""\n```\n\nThis docstring uses Google-style formatting for consistency and readability. It includes a one-line summary of what the function does, as well as clear and concise information about each argument, return value, and any applicable exceptions. The example demonstrates how to use the function with sample arguments.', 'origin_doc': ':param calc_id: the calculation ID\r\n    :param ekey: the export key\r\n    :param kind: the kind of key\r\n    :param rlzs_assoc: a RlzsAssoc instance'}]","```python
-def export_hcurves_by_imt_csv(
-        key: str, kind: str, rlzs_assoc: object, fname: str, sitecol: object, array: numpy.ndarray,
-        oq: dict) -> list:
-    """"""
-    Export the curves of the given realization into CSV.
-
-    Parameters
-    ----------
-    key : str
-        output_type and export type
-
-    kind : str
-        a string with the kind of output (realization or statistics)
-
-    rlzs_assoc : object
-        an instance of openquake.commonlib.source.RlzsAssoc, containing associated realizations
-
-    fname : str
-        name of the exported file
-
-    sitecol : object
-        site collection
-
-    array : numpy.ndarray, shape (N, L) and dtype numpy.float32
-        an array representing the depths of the given realization
-
-    oq : dict
-        job.ini parameters
-
-    Returns
-    -------
-    list
-        a list of filenames for each exported curve CSV file
-
-    Raises
-    ------
-    TypeError
-        if rlzs_assoc is not an instance of openquake.commonlib.source.RlzsAssoc, or if oq.imtls is empty
-    ValueError
-        if any(imt not in oq.imtls for imt in rlzs_assoc.get('imts', []))
-    """"""
-
-    # Calculate the number of sites and filenames needed for each exported curve CSV file
-    nsites = len(sitecol)
-    fnames = []
-    for imt, imls in oq.imtls.items():
-        # Get the associated realizations
-        slc = oq.imtls(imt)
-        dest = add_imt(fname, imt)
-
-        # Prepare a list of columns for the CSV file
-        lst = [('lon', F32), ('lat', F32), ('depth', F32)]
-
-        # Add information about each point on the curve to the CSV file
-        for iml in imls:
-            lst.append(('poe-%s' % iml, F32))
-
-        # Create an array of shape (nsites, 3) containing the coordinates and depths of each point on the curve
-        hcurves = numpy.zeros(nsites, lst)
-
-        # Add information about each point on the curve to the CSV file
-        for sid, lon, lat, dep in zip(
-                range(nsites), sitecol.lons, sitecol.lats, sitecol.depths):
-            hcurves[sid] = (lon, lat, dep) + tuple(array[sid, slc])
-
-        # Write each CSV file with the exported data
-        fnames.append(writers.write_csv(dest, hcurves, comment=_comment(
-            rlzs_assoc, kind, oq.investigation_time) + ("" imt=""%s"", checksum=%d"" % (imt, checksum)), header=[name for (name, dt) in lst])))
-
-    return fnames
-```","Export the curves of the given realization into CSV.
-
-    :param key: output_type and export_type
-    :param kind: a string with the kind of output (realization or statistics)
-    :param rlzs_assoc: a :class:`openquake.commonlib.source.RlzsAssoc` instance
-    :param fname: name of the exported file
-    :param sitecol: site collection
-    :param array: an array of shape (N, L) and dtype numpy.float32
-    :param oq: job.ini parameters"
-sample.csv,gem/oq-engine,https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L280-L294,hazard_curve_name,python,"def hazard_curve_name(dstore, ekey, kind, rlzs_assoc):
-    """"""
-    :param calc_id: the calculation ID
-    :param ekey: the export key
-    :param kind: the kind of key
-    :param rlzs_assoc: a RlzsAssoc instance
-    """"""
-    key, fmt = ekey
-    prefix = {'hcurves': 'hazard_curve', 'hmaps': 'hazard_map',
-              'uhs': 'hazard_uhs'}[key]
-    if kind.startswith('quantile-'):  # strip the 7 characters 'hazard_'
-        fname = dstore.build_fname('quantile_' + prefix[7:], kind[9:], fmt)
+    if isinstance(secret, six.string_types):
+        # It is unicode, convert it to bytes
+        secret = secret.encode('utf-8')
+    # Get rid of all the spacing:
+    secret = secret.replace(b' ', b'')
+    try:
+        key = base64.b32decode(secret, casefold=casefold)
+    except (TypeError):
+        raise TypeError('Incorrect secret')
+    msg = struct.pack('>Q', intervals_no)
+    hmac_digest = hmac.new(key, msg, digest_method).digest()
+    ob = hmac_digest[19] if six.PY3 else ord(hmac_digest[19])
+    o = ob & 15
+    token_base = struct.unpack('>I', hmac_digest[o:o + 4])[0] & 0x7fffffff
+    token = token_base % (10 ** token_length)
+    if as_string:
+        # TODO: should as_string=True return unicode, not bytes?
+        return six.b('{{:0{}d}}'.format(token_length).format(token))
     else:
-        fname = dstore.build_fname(prefix, kind, fmt)
-    return fname",llama3.2:1b,"[{'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L81-L106', 'func_name': 'export_ruptures_csv', 'language': 'python', 'input_code': 'def export_ruptures_csv(ekey, dstore):\r\n    """"""\r\n    :param ekey: export key, i.e. a pair (datastore key, fmt)\r\n    :param dstore: datastore object\r\n    """"""\r\n    oq = dstore[\'oqparam\']\r\n    if \'scenario\' in oq.calculation_mode:\r\n        return []\r\n    dest = dstore.export_path(\'ruptures.csv\')\r\n    header = (\'rupid multiplicity mag centroid_lon centroid_lat \'\r\n              \'centroid_depth trt strike dip rake boundary\').split()\r\n    rows = []\r\n    for rgetter in gen_rupture_getters(dstore):\r\n        rups = rgetter.get_ruptures()\r\n        rup_data = calc.RuptureData(rgetter.trt, rgetter.rlzs_by_gsim)\r\n        for r in rup_data.to_array(rups):\r\n            rows.append(\r\n                (r[\'rup_id\'], r[\'multiplicity\'], r[\'mag\'],\r\n                 r[\'lon\'], r[\'lat\'], r[\'depth\'],\r\n                 rgetter.trt, r[\'strike\'], r[\'dip\'], r[\'rake\'],\r\n                 r[\'boundary\']))\r\n    rows.sort()  # by rupture serial\r\n    comment = \'investigation_time=%s, ses_per_logic_tree_path=%s\' % (\r\n        oq.investigation_time, oq.ses_per_logic_tree_path)\r\n    writers.write_csv(dest, rows, header=header, sep=\'\\t\', comment=comment)\r\n    return [dest]', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef export_ruptures_csv(ekey: tuple[int, str], dstore: \'DatastoreObjectStore\') -> list:\n    """"""\n    Generates a CSV file containing rupture data for the specified export key.\n\n    :param ekey: A pair (datastore key, fmt) representing the export key.\n    :param dstore: The datastore object to use for exporting ruptures.\n    :return: A list containing the destination filename and path of the exported CSV file.\n    """"""\n    # Get the oqparam calculation mode from the datastore\n    oq = dstore[\'oqparam\']\n\n    # If the calculation mode is in \'scenario\' mode, return an empty list\n    if \'scenario\' in oq.calculation_mode:\n        return []\n\n    # Set the export path for the CSV file\n    dest = dstore.export_path(\'ruptures.csv\')\n\n    # Define the header row for the CSV file\n    header = (\n        \'rupid multiplicity mag centroid_lon centroid_lat \'\n        \'centroid_depth trt strike dip rake boundary\').split()\n\n    # Initialize an empty list to store the rupture rows\n    rows = []\n\n    # Iterate over each rupture getter object (gen_rupture_getters)\n    for rgetter in gen_rupture_getters(dstore):\n        # Get the ruptures from the generator\n        rups = rgetter.get_ruptures()\n\n        # Create a RuptureData object with the relevant parameters\n        rup_data = calc.RuptureData(rgetter.trt, rgetter.rlzs_by_gsim)\n\n        # Iterate over each rupture in the data\n        for r in rup_data.to_array(rups):\n            # Append the row to the list of rows\n            rows.append(\n                (r[\'rup_id\'], r[\'multiplicity\'], r[\'mag\'],\n                 r[\'lon\'], r[\'lat\'], r[\'depth\'],\n                 rgetter.trt, r[\'strike\'], r[\'dip\'], r[\'rake\'],\n                 r[\'boundary\']))\n\n    # Sort the rows by rupture serial\n    rows.sort()\n\n    # Define a comment to include in the CSV file header\n    comment = \'investigation_time=%s, ses_per_logic_tree_path=%s\' % (\n        oq.investigation_time, oq.ses_per_logic_tree_path)\n\n    # Write the CSV file using the writers module\n    writers.write_csv(dest, rows, header=header, sep=\'\\t\', comment=comment)\n    \n    # Return a list containing the destination filename and path\n    return [dest]\n```', 'origin_doc': ':param ekey: export key, i.e. a pair (datastore key, fmt)\r\n    :param dstore: datastore object'}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L223-L235', 'func_name': 'export_hmaps_csv', 'language': 'python', 'input_code': 'def export_hmaps_csv(key, dest, sitemesh, array, comment):\r\n    """"""\r\n    Export the hazard maps of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param dest: name of the exported file\r\n    :param sitemesh: site collection\r\n    :param array: a composite array of dtype hmap_dt\r\n    :param comment: comment to use as header of the exported CSV file\r\n    """"""\r\n    curves = util.compose_arrays(sitemesh, array)\r\n    writers.write_csv(dest, curves, comment=comment)\r\n    return [dest]', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef export_hmaps_csv(\n    key: str,\n    dest: str,\n    sitemesh: str,\n    array: ""composite_array"",\n    comment: str = """"\n) -> list:\n    """"""\n    Export the hazard maps of the given realization into CSV.\n\n    This function generates a CSV file containing the hazard maps for the specified\n    realization, written by the HMP library. The hazard maps are composed from a given\n    composite array and exported to a specific destination file with an optional comment.\n\n    :param key: Output type and export type (string)\n    :param dest: Name of the exported CSV file (string)\n    :param sitemesh: Site collection (string)\n    :param array: Composite array of dtype hmap_dt\n    :param comment: Comment to use as header of the exported CSV file (string, optional)\n    :return: List containing the name of the exported CSV file\n    """"""\n\n    # Curves are generated from the site collection and composite array using util.compose_arrays\n    curves = util.compose_arrays(sitemesh, array)\n\n    # The hazard maps are written to a CSV file using writers.write_csv\n    writers.write_csv(dest, curves, comment=comment)\n\n    # Return a list containing the name of the exported CSV file\n    return [dest]\n```', 'origin_doc': 'Export the hazard maps of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param dest: name of the exported file\r\n    :param sitemesh: site collection\r\n    :param array: a composite array of dtype hmap_dt\r\n    :param comment: comment to use as header of the exported CSV file'}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L238-L245', 'func_name': 'add_imt', 'language': 'python', 'input_code': 'def add_imt(fname, imt):\r\n    """"""\r\n    >>> add_imt(\'/path/to/hcurve_23.csv\', \'SA(0.1)\')\r\n    \'/path/to/hcurve-SA(0.1)_23.csv\'\r\n    """"""\r\n    name = os.path.basename(fname)\r\n    newname = re.sub(r\'(_\\d+\\.)\', \'-%s\\\\1\' % imt, name)\r\n    return os.path.join(os.path.dirname(fname), newname)', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef add_imt(fname: str, imt: str) -> str:\n    """"""\n    Adds a suffix to the given file name in the format \'YYYYMMDD_Hcurve_XXX.csv\'.\n\n    Args:\n        fname (str): The base filename with extension.\n        imt (str): The IMT suffix to be appended.\n\n    Returns:\n        str: The new filename with the appended suffix.\n\n    Raises:\n        ValueError: If the file name does not match the format \'YYYYMMDD_Hcurve_XXX.csv\'.\n\n    Example:\n        >>> add_imt(\'/path/to/hcurve_23.csv\', \'SA(0.1)\')\n        \'/path/to/hcurve-SA(0.1)_23.csv\'\n    """"""\n```\n\nNote: I\'ve added type hints for `fname` and `imt`, followed by a brief description of what each parameter represents, as well as the return value. The docstring also includes an example use case to help illustrate how to call the function.', 'origin_doc': "">>> add_imt('/path/to/hcurve_23.csv', 'SA(0.1)')\r\n    '/path/to/hcurve-SA(0.1)_23.csv'""}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L248-L277', 'func_name': 'export_hcurves_by_imt_csv', 'language': 'python', 'input_code': 'def export_hcurves_by_imt_csv(\r\n        key, kind, rlzs_assoc, fname, sitecol, array, oq, checksum):\r\n    """"""\r\n    Export the curves of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param kind: a string with the kind of output (realization or statistics)\r\n    :param rlzs_assoc: a :class:`openquake.commonlib.source.RlzsAssoc` instance\r\n    :param fname: name of the exported file\r\n    :param sitecol: site collection\r\n    :param array: an array of shape (N, L) and dtype numpy.float32\r\n    :param oq: job.ini parameters\r\n    """"""\r\n    nsites = len(sitecol)\r\n    fnames = []\r\n    for imt, imls in oq.imtls.items():\r\n        slc = oq.imtls(imt)\r\n        dest = add_imt(fname, imt)\r\n        lst = [(\'lon\', F32), (\'lat\', F32), (\'depth\', F32)]\r\n        for iml in imls:\r\n            lst.append((\'poe-%s\' % iml, F32))\r\n        hcurves = numpy.zeros(nsites, lst)\r\n        for sid, lon, lat, dep in zip(\r\n                range(nsites), sitecol.lons, sitecol.lats, sitecol.depths):\r\n            hcurves[sid] = (lon, lat, dep) + tuple(array[sid, slc])\r\n        fnames.append(writers.write_csv(dest, hcurves, comment=_comment(\r\n            rlzs_assoc, kind, oq.investigation_time) + (\r\n                \', imt=""%s"", checksum=%d\' % (imt, checksum)\r\n            ), header=[name for (name, dt) in lst]))\r\n    return fnames', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef export_hcurves_by_imt_csv(\n        key: str, kind: str, rlzs_assoc: object, fname: str, sitecol: object, array: numpy.ndarray,\n        oq: dict) -> list:\n    """"""\n    Export the curves of the given realization into CSV.\n\n    Parameters\n    ----------\n    key : str\n        output_type and export type\n\n    kind : str\n        a string with the kind of output (realization or statistics)\n\n    rlzs_assoc : object\n        an instance of openquake.commonlib.source.RlzsAssoc, containing associated realizations\n\n    fname : str\n        name of the exported file\n\n    sitecol : object\n        site collection\n\n    array : numpy.ndarray, shape (N, L) and dtype numpy.float32\n        an array representing the depths of the given realization\n\n    oq : dict\n        job.ini parameters\n\n    Returns\n    -------\n    list\n        a list of filenames for each exported curve CSV file\n\n    Raises\n    ------\n    TypeError\n        if rlzs_assoc is not an instance of openquake.commonlib.source.RlzsAssoc, or if oq.imtls is empty\n    ValueError\n        if any(imt not in oq.imtls for imt in rlzs_assoc.get(\'imts\', []))\n    """"""\n\n    # Calculate the number of sites and filenames needed for each exported curve CSV file\n    nsites = len(sitecol)\n    fnames = []\n    for imt, imls in oq.imtls.items():\n        # Get the associated realizations\n        slc = oq.imtls(imt)\n        dest = add_imt(fname, imt)\n\n        # Prepare a list of columns for the CSV file\n        lst = [(\'lon\', F32), (\'lat\', F32), (\'depth\', F32)]\n\n        # Add information about each point on the curve to the CSV file\n        for iml in imls:\n            lst.append((\'poe-%s\' % iml, F32))\n\n        # Create an array of shape (nsites, 3) containing the coordinates and depths of each point on the curve\n        hcurves = numpy.zeros(nsites, lst)\n\n        # Add information about each point on the curve to the CSV file\n        for sid, lon, lat, dep in zip(\n                range(nsites), sitecol.lons, sitecol.lats, sitecol.depths):\n            hcurves[sid] = (lon, lat, dep) + tuple(array[sid, slc])\n\n        # Write each CSV file with the exported data\n        fnames.append(writers.write_csv(dest, hcurves, comment=_comment(\n            rlzs_assoc, kind, oq.investigation_time) + ("" imt=""%s"", checksum=%d"" % (imt, checksum)), header=[name for (name, dt) in lst])))\n\n    return fnames\n```', 'origin_doc': 'Export the curves of the given realization into CSV.\r\n\r\n    :param key: output_type and export_type\r\n    :param kind: a string with the kind of output (realization or statistics)\r\n    :param rlzs_assoc: a :class:`openquake.commonlib.source.RlzsAssoc` instance\r\n    :param fname: name of the exported file\r\n    :param sitecol: site collection\r\n    :param array: an array of shape (N, L) and dtype numpy.float32\r\n    :param oq: job.ini parameters'}, {'filename': 'sample.csv', 'repo': 'gem/oq-engine', 'file_url': 'https://github.com/gem/oq-engine/blob/8294553a0b8aba33fd96437a35065d03547d0040/openquake/calculators/export/hazard.py#L280-L294', 'func_name': 'hazard_curve_name', 'language': 'python', 'input_code': 'def hazard_curve_name(dstore, ekey, kind, rlzs_assoc):\r\n    """"""\r\n    :param calc_id: the calculation ID\r\n    :param ekey: the export key\r\n    :param kind: the kind of key\r\n    :param rlzs_assoc: a RlzsAssoc instance\r\n    """"""\r\n    key, fmt = ekey\r\n    prefix = {\'hcurves\': \'hazard_curve\', \'hmaps\': \'hazard_map\',\r\n              \'uhs\': \'hazard_uhs\'}[key]\r\n    if kind.startswith(\'quantile-\'):  # strip the 7 characters \'hazard_\'\r\n        fname = dstore.build_fname(\'quantile_\' + prefix[7:], kind[9:], fmt)\r\n    else:\r\n        fname = dstore.build_fname(prefix, kind, fmt)\r\n    return fname', 'model': 'llama3.2:1b', 'prompt': [...], 'generated_doc': '```python\ndef hazard_curve_name(dstore: object, ekey: str, kind: str, rlzs_assoc: object) -> str:\n    """"""\n    Generates the name of a hazard curve based on the export key and kind.\n\n    This function takes in three arguments: `calc_id`, `ekey`, `kind`, and `rlzs_assoc`.\n    It returns the formatted file name for the hazard curve.\n\n    Args:\n        dstore (object): The database store instance to use for building file names.\n        ekey (str): The export key associated with the hazard curve.\n        kind (str): The type of key that corresponds to the hazard curve.\n        rlzs_assoc (object): A RlzsAssoc instance representing the association.\n\n    Returns:\n        str: The formatted file name for the hazard curve.\n\n    Raises:\n        None\n\n    Example:\n        >>> import numpy as np\n        >>> from rlm.utils import hazard_curve_name\n        >>> dstore = ...  # Initialize database store instance\n        >>> ekey = \'hcurves/quantile/hazard_7\'\n        >>> kind = \'quantile\'\n        >>> rlzs_assoc = ...  # Initialize RlzsAssoc instance\n        >>> hazard_curve_name(dstore, ekey, kind, rlzs_assoc)\n        \'/path/to/file_name.hazard_curve\'\n    """"""\n```\n\nThis docstring uses Google-style formatting for consistency and readability. It includes a one-line summary of what the function does, as well as clear and concise information about each argument, return value, and any applicable exceptions. The example demonstrates how to use the function with sample arguments.', 'origin_doc': ':param calc_id: the calculation ID\r\n    :param ekey: the export key\r\n    :param kind: the kind of key\r\n    :param rlzs_assoc: a RlzsAssoc instance'}]","```python
-def hazard_curve_name(dstore: object, ekey: str, kind: str, rlzs_assoc: object) -> str:
+        return token",llama3.2:1b,"As a senior Python engineer, write a professional Google-style docstring for this function: def get_hotp(
+        secret,
+        intervals_no,
+        as_string=False,
+        casefold=True,
+        digest_method=hashlib.sha1,
+        token_length=6,
+):
     """"""
-    Generates the name of a hazard curve based on the export key and kind.
+    Get HMAC-based one-time password on the basis of given secret and
+    interval number.
 
-    This function takes in three arguments: `calc_id`, `ekey`, `kind`, and `rlzs_assoc`.
-    It returns the formatted file name for the hazard curve.
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str or unicode
+    :param intervals_no: interval number used for getting different tokens, it
+        is incremented with each use
+    :type intervals_no: int
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param casefold: True (default), if should accept also lowercase alphabet
+    :type casefold: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: generated HOTP token
+    :rtype: int or str
 
-    Args:
-        dstore (object): The database store instance to use for building file names.
-        ekey (str): The export key associated with the hazard curve.
-        kind (str): The type of key that corresponds to the hazard curve.
-        rlzs_assoc (object): A RlzsAssoc instance representing the association.
-
-    Returns:
-        str: The formatted file name for the hazard curve.
-
-    Raises:
-        None
-
-    Example:
-        >>> import numpy as np
-        >>> from rlm.utils import hazard_curve_name
-        >>> dstore = ...  # Initialize database store instance
-        >>> ekey = 'hcurves/quantile/hazard_7'
-        >>> kind = 'quantile'
-        >>> rlzs_assoc = ...  # Initialize RlzsAssoc instance
-        >>> hazard_curve_name(dstore, ekey, kind, rlzs_assoc)
-        '/path/to/file_name.hazard_curve'
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=1)
+    765705
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2)
+    816065
+    >>> result = get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2, as_string=True)
+    >>> result == b'816065'
+    True
     """"""
-```
+    if isinstance(secret, six.string_types):
+        # It is unicode, convert it to bytes
+        secret = secret.encode('utf-8')
+    # Get rid of all the spacing:
+    secret = secret.replace(b' ', b'')
+    try:
+        key = base64.b32decode(secret, casefold=casefold)
+    except (TypeError):
+        raise TypeError('Incorrect secret')
+    msg = struct.pack('>Q', intervals_no)
+    hmac_digest = hmac.new(key, msg, digest_method).digest()
+    ob = hmac_digest[19] if six.PY3 else ord(hmac_digest[19])
+    o = ob & 15
+    token_base = struct.unpack('>I', hmac_digest[o:o + 4])[0] & 0x7fffffff
+    token = token_base % (10 ** token_length)
+    if as_string:
+        # TODO: should as_string=True return unicode, not bytes?
+        return six.b('{{:0{}d}}'.format(token_length).format(token))
+    else:
+        return token","[{'prompt': 'As a senior Python engineer, write a professional Google-style docstring for this function: def get_hotp(\r\n        secret,\r\n        intervals_no,\r\n        as_string=False,\r\n        casefold=True,\r\n        digest_method=hashlib.sha1,\r\n        token_length=6,\r\n):\r\n    """"""\r\n    Get HMAC-based one-time password on the basis of given secret and\r\n    interval number.\r\n\r\n    :param secret: the base32-encoded string acting as secret key\r\n    :type secret: str or unicode\r\n    :param intervals_no: interval number used for getting different tokens, it\r\n        is incremented with each use\r\n    :type intervals_no: int\r\n    :param as_string: True if result should be padded string, False otherwise\r\n    :type as_string: bool\r\n    :param casefold: True (default), if should accept also lowercase alphabet\r\n    :type casefold: bool\r\n    :param digest_method: method of generating digest (hashlib.sha1 by default)\r\n    :type digest_method: callable\r\n    :param token_length: length of the token (6 by default)\r\n    :type token_length: int\r\n    :return: generated HOTP token\r\n    :rtype: int or str\r\n\r\n    >>> get_hotp(b\'MFRGGZDFMZTWQ2LK\', intervals_no=1)\r\n    765705\r\n    >>> get_hotp(b\'MFRGGZDFMZTWQ2LK\', intervals_no=2)\r\n    816065\r\n    >>> result = get_hotp(b\'MFRGGZDFMZTWQ2LK\', intervals_no=2, as_string=True)\r\n    >>> result == b\'816065\'\r\n    True\r\n    """"""\r\n    if isinstance(secret, six.string_types):\r\n        # It is unicode, convert it to bytes\r\n        secret = secret.encode(\'utf-8\')\r\n    # Get rid of all the spacing:\r\n    secret = secret.replace(b\' \', b\'\')\r\n    try:\r\n        key = base64.b32decode(secret, casefold=casefold)\r\n    except (TypeError):\r\n        raise TypeError(\'Incorrect secret\')\r\n    msg = struct.pack(\'>Q\', intervals_no)\r\n    hmac_digest = hmac.new(key, msg, digest_method).digest()\r\n    ob = hmac_digest[19] if six.PY3 else ord(hmac_digest[19])\r\n    o = ob & 15\r\n    token_base = struct.unpack(\'>I\', hmac_digest[o:o + 4])[0] & 0x7fffffff\r\n    token = token_base % (10 ** token_length)\r\n    if as_string:\r\n        # TODO: should as_string=True return unicode, not bytes?\r\n        return six.b(\'{{:0{}d}}\'.format(token_length).format(token))\r\n    else:\r\n        return token', 'output': '```\n""""""\nGets an HMAC-based one-time password based on the given secret key and interval number.\n\nParameters\n----------\nsecret : str or unicode\n             The base32-encoded string acting as the secret key.\nas_string : bool, optional (default=False)\n              Whether to return a padded string instead of bytes.\ncasefold : bool, optional (default=True)\n           If True, the function will accept all lowercase alphabets.\ndigest_method : callable, optional (default=hashlib.sha1)\n                   The method used to generate the digest (e.g., hmac.new).\ntoken_length : int, optional (default=6)\n              The length of the generated token.\n\nReturns\n-------\nint or str:\n             The generated HOTP token as an integer or a padded string.\n""""""\n\ndef get_hotp(\n        secret,\n        intervals_no,\n        as_string=False,\n        casefold=True,\n        digest_method=hashlib.sha1,\n        token_length=6,\n):\n    """"""\n    Get HMAC-based one-time password on the basis of given secret and\n    interval number.\n\n    :param secret: The base32-encoded string acting as the secret key.\n    :type secret: str or unicode\n    :param intervals_no: Interval number used for getting different tokens, it\n        is incremented with each use.\n    :type intervals_no: int\n    :param as_string: True if result should be padded string, False otherwise.\n    :type as_string: bool\n    :param casefold: True (default), if should accept also lowercase alphabet.\n    :type casefold: bool\n    :param digest_method: method of generating digest (hashlib.sha1 by default)\n    :type digest_method: callable\n    :param token_length: length of the token (6 by default)\n    :type token_length: int\n    :return: Generated HOTP token\n    :rtype: int or str\n\n    >>> get_hotp(b\'MFRGGZDFMZTWQ2LK\', intervals_no=1)\n    765705\n    >>> get_hotp(b\'MFRGGZDFMZTWQ2LK\', intervals_no=2)\n    816065\n    >>> result = get_hotp(b\'MFRGGZDFMZTWQ2LK\', intervals_no=2, as_string=True)\n    >>> result == b\'816065\'\n    True\n    """"""\n```'}]","Get HMAC-based one-time password on the basis of given secret and
+    interval number.
 
-This docstring uses Google-style formatting for consistency and readability. It includes a one-line summary of what the function does, as well as clear and concise information about each argument, return value, and any applicable exceptions. The example demonstrates how to use the function with sample arguments.",":param calc_id: the calculation ID
-    :param ekey: the export key
-    :param kind: the kind of key
-    :param rlzs_assoc: a RlzsAssoc instance"
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str or unicode
+    :param intervals_no: interval number used for getting different tokens, it
+        is incremented with each use
+    :type intervals_no: int
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param casefold: True (default), if should accept also lowercase alphabet
+    :type casefold: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: generated HOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=1)
+    765705
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2)
+    816065
+    >>> result = get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2, as_string=True)
+    >>> result == b'816065'
+    True"
+tadeck_onetimepass.csv,tadeck/onetimepass,https://github.com/tadeck/onetimepass/blob/ee4b4e1700089757594a5ffee5f24408c864ad00/onetimepass/__init__.py#L129-L170,get_totp,python,"def get_totp(
+        secret,
+        as_string=False,
+        digest_method=hashlib.sha1,
+        token_length=6,
+        interval_length=30,
+        clock=None,
+):
+    """"""Get time-based one-time password on the basis of given secret and time.
+
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :return: generated TOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK')
+    True
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK', as_string=True)
+    False
+    """"""
+    if clock is None:
+        clock = time.time()
+    interv_no = int(clock) // interval_length
+    return get_hotp(
+        secret,
+        intervals_no=interv_no,
+        as_string=as_string,
+        digest_method=digest_method,
+        token_length=token_length,
+    )",llama3.2:1b,"As a senior Python engineer, write a professional Google-style docstring for this function: def get_totp(
+        secret,
+        as_string=False,
+        digest_method=hashlib.sha1,
+        token_length=6,
+        interval_length=30,
+        clock=None,
+):
+    """"""Get time-based one-time password on the basis of given secret and time.
+
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :return: generated TOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK')
+    True
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK', as_string=True)
+    False
+    """"""
+    if clock is None:
+        clock = time.time()
+    interv_no = int(clock) // interval_length
+    return get_hotp(
+        secret,
+        intervals_no=interv_no,
+        as_string=as_string,
+        digest_method=digest_method,
+        token_length=token_length,
+    )","[{'prompt': 'As a senior Python engineer, write a professional Google-style docstring for this function: def get_totp(\r\n        secret,\r\n        as_string=False,\r\n        digest_method=hashlib.sha1,\r\n        token_length=6,\r\n        interval_length=30,\r\n        clock=None,\r\n):\r\n    """"""Get time-based one-time password on the basis of given secret and time.\r\n\r\n    :param secret: the base32-encoded string acting as secret key\r\n    :type secret: str\r\n    :param as_string: True if result should be padded string, False otherwise\r\n    :type as_string: bool\r\n    :param digest_method: method of generating digest (hashlib.sha1 by default)\r\n    :type digest_method: callable\r\n    :param token_length: length of the token (6 by default)\r\n    :type token_length: int\r\n    :param interval_length: length of TOTP interval (30 seconds by default)\r\n    :type interval_length: int\r\n    :param clock: time in epoch seconds to generate totp for, default is now\r\n    :type clock: int\r\n    :return: generated TOTP token\r\n    :rtype: int or str\r\n\r\n    >>> get_hotp(b\'MFRGGZDFMZTWQ2LK\', int(time.time())//30) == \\\r\n        get_totp(b\'MFRGGZDFMZTWQ2LK\')\r\n    True\r\n    >>> get_hotp(b\'MFRGGZDFMZTWQ2LK\', int(time.time())//30) == \\\r\n        get_totp(b\'MFRGGZDFMZTWQ2LK\', as_string=True)\r\n    False\r\n    """"""\r\n    if clock is None:\r\n        clock = time.time()\r\n    interv_no = int(clock) // interval_length\r\n    return get_hotp(\r\n        secret,\r\n        intervals_no=interv_no,\r\n        as_string=as_string,\r\n        digest_method=digest_method,\r\n        token_length=token_length,\r\n    )', 'output': '```\ndef get_totp(\n    secret,\n    as_string=False,\n    digest_method=hashlib.sha1,\n    token_length=6,\n    interval_length=30,\n    clock=None,\n):\n    """"""\n    Generate a time-based one-time password (TOTP) based on the given secret and current time.\n\n    Parameters\n    ----------\n    secret : str\n        The base32-encoded string acting as the secret key.\n    as_string : bool, optional\n        Whether to return the result as a padded string. Defaults to False.\n    digest_method : callable, optional\n        Method of generating the TOTP digest (default: sha1).\n    token_length : int, optional\n        Length of the generated token (default: 6).\n    interval_length : int, optional\n        Length of the time interval between generated tokens (default: 30 seconds).\n    clock : int, optional\n        Time in epoch seconds to generate the TOTP for. Defaults to the current time.\n\n    Returns\n    -------\n    int or str\n        The generated TOTP token.\n    """"""\n\n    # If no clock is provided, use the current time as the base\n    if clock is None:\n        clock = time.time()\n\n    # Calculate the interval number by dividing the clock by the interval length\n    interv_no = int(clock) // interval_length\n\n    # Generate the TOTP using the given secret and parameters\n    return get_hotp(\n        secret,\n        intervals_no=interv_no,\n        as_string=as_string,\n        digest_method=digest_method,\n        token_length=token_length,\n    )\n```'}]","Get time-based one-time password on the basis of given secret and time.
+
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :return: generated TOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK')
+    True
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK', as_string=True)
+    False"
+tadeck_onetimepass.csv,tadeck/onetimepass,https://github.com/tadeck/onetimepass/blob/ee4b4e1700089757594a5ffee5f24408c864ad00/onetimepass/__init__.py#L173-L218,valid_hotp,python,"def valid_hotp(
+        token,
+        secret,
+        last=1,
+        trials=1000,
+        digest_method=hashlib.sha1,
+        token_length=6,
+):
+    """"""Check if given token is valid for given secret. Return interval number
+    that was successful, or False if not found.
+
+    :param token: token being checked
+    :type token: int or str
+    :param secret: secret for which token is checked
+    :type secret: str
+    :param last: last used interval (start checking with next one)
+    :type last: int
+    :param trials: number of intervals to check after 'last'
+    :type trials: int
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: interval number, or False if check unsuccessful
+    :rtype: int or bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> valid_hotp(713385, secret, last=1, trials=5)
+    4
+    >>> valid_hotp(865438, secret, last=1, trials=5)
+    False
+    >>> valid_hotp(713385, secret, last=4, trials=5)
+    False
+    """"""
+    if not _is_possible_token(token, token_length=token_length):
+        return False
+    for i in six.moves.xrange(last + 1, last + trials + 1):
+        token_candidate = get_hotp(
+            secret=secret,
+            intervals_no=i,
+            digest_method=digest_method,
+            token_length=token_length,
+        )
+        if token_candidate == int(token):
+            return i
+    return False",llama3.2:1b,"As a senior Python engineer, write a professional Google-style docstring for this function: def valid_hotp(
+        token,
+        secret,
+        last=1,
+        trials=1000,
+        digest_method=hashlib.sha1,
+        token_length=6,
+):
+    """"""Check if given token is valid for given secret. Return interval number
+    that was successful, or False if not found.
+
+    :param token: token being checked
+    :type token: int or str
+    :param secret: secret for which token is checked
+    :type secret: str
+    :param last: last used interval (start checking with next one)
+    :type last: int
+    :param trials: number of intervals to check after 'last'
+    :type trials: int
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: interval number, or False if check unsuccessful
+    :rtype: int or bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> valid_hotp(713385, secret, last=1, trials=5)
+    4
+    >>> valid_hotp(865438, secret, last=1, trials=5)
+    False
+    >>> valid_hotp(713385, secret, last=4, trials=5)
+    False
+    """"""
+    if not _is_possible_token(token, token_length=token_length):
+        return False
+    for i in six.moves.xrange(last + 1, last + trials + 1):
+        token_candidate = get_hotp(
+            secret=secret,
+            intervals_no=i,
+            digest_method=digest_method,
+            token_length=token_length,
+        )
+        if token_candidate == int(token):
+            return i
+    return False","[{'prompt': 'As a senior Python engineer, write a professional Google-style docstring for this function: def valid_hotp(\r\n        token,\r\n        secret,\r\n        last=1,\r\n        trials=1000,\r\n        digest_method=hashlib.sha1,\r\n        token_length=6,\r\n):\r\n    """"""Check if given token is valid for given secret. Return interval number\r\n    that was successful, or False if not found.\r\n\r\n    :param token: token being checked\r\n    :type token: int or str\r\n    :param secret: secret for which token is checked\r\n    :type secret: str\r\n    :param last: last used interval (start checking with next one)\r\n    :type last: int\r\n    :param trials: number of intervals to check after \'last\'\r\n    :type trials: int\r\n    :param digest_method: method of generating digest (hashlib.sha1 by default)\r\n    :type digest_method: callable\r\n    :param token_length: length of the token (6 by default)\r\n    :type token_length: int\r\n    :return: interval number, or False if check unsuccessful\r\n    :rtype: int or bool\r\n\r\n    >>> secret = b\'MFRGGZDFMZTWQ2LK\'\r\n    >>> valid_hotp(713385, secret, last=1, trials=5)\r\n    4\r\n    >>> valid_hotp(865438, secret, last=1, trials=5)\r\n    False\r\n    >>> valid_hotp(713385, secret, last=4, trials=5)\r\n    False\r\n    """"""\r\n    if not _is_possible_token(token, token_length=token_length):\r\n        return False\r\n    for i in six.moves.xrange(last + 1, last + trials + 1):\r\n        token_candidate = get_hotp(\r\n            secret=secret,\r\n            intervals_no=i,\r\n            digest_method=digest_method,\r\n            token_length=token_length,\r\n        )\r\n        if token_candidate == int(token):\r\n            return i\r\n    return False', 'output': '```\ndef valid_hotp(\n        """"""\n        Check if a given token is valid for a provided secret.\n\n        Returns the interval number that was successful, or False if not found.\n\n        :param token: The token to be checked\n        :type token: int or str\n        :param secret: The secret for which the token is being checked\n        :type secret: str\n        :param last: The start of the recent intervals to check (default is 1)\n        :type last: int\n        :param trials: The number of subsequent intervals to check after \'last\' (default is 1000)\n        :type trials: int\n        :param digest_method: The method used to generate the HMAC-SHA-256 digest (default is hashlib.sha1)\n        :type digest_method: callable\n        :param token_length: The length of the token (default is 6)\n        :type token_length: int\n        :return: The interval number that was successful, or False if check unsuccessful\n        :rtype: int or bool\n\n        Example usage:\n            >>> secret = b\'MFRGGZDFMZTWQ2LK\'\n            >>> valid_hotp(713385, secret, last=1, trials=5)\n            4\n            >>> valid_hotp(865438, secret, last=1, trials=5)\n            False\n            >>> valid_hotp(713385, secret, last=4, trials=5)\n            False\n        """""",\n        return_value=int,\n        type hint=_return_type,\n        description=\'Check if a given token is valid for a provided secret.\',\n        help=\'This function checks the validity of a token against a provided secret.\',\n        notes=\'The function returns the interval number that was successful, or False if not found.\',\n        )\n```'}]","Check if given token is valid for given secret. Return interval number
+    that was successful, or False if not found.
+
+    :param token: token being checked
+    :type token: int or str
+    :param secret: secret for which token is checked
+    :type secret: str
+    :param last: last used interval (start checking with next one)
+    :type last: int
+    :param trials: number of intervals to check after 'last'
+    :type trials: int
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: interval number, or False if check unsuccessful
+    :rtype: int or bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> valid_hotp(713385, secret, last=1, trials=5)
+    4
+    >>> valid_hotp(865438, secret, last=1, trials=5)
+    False
+    >>> valid_hotp(713385, secret, last=4, trials=5)
+    False"
+tadeck_onetimepass.csv,tadeck/onetimepass,https://github.com/tadeck/onetimepass/blob/ee4b4e1700089757594a5ffee5f24408c864ad00/onetimepass/__init__.py#L221-L276,valid_totp,python,"def valid_totp(
+        token,
+        secret,
+        digest_method=hashlib.sha1,
+        token_length=6,
+        interval_length=30,
+        clock=None,
+        window=0,
+):
+    """"""Check if given token is valid time-based one-time password for given
+    secret.
+
+    :param token: token which is being checked
+    :type token: int or str
+    :param secret: secret for which the token is being checked
+    :type secret: str
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :param window: compensate for clock skew, number of intervals to check on
+        each side of the current time. (default is 0 - only check the current
+        clock time)
+    :type window: int (positive)
+    :return: True, if is valid token, False otherwise
+    :rtype: bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> token = get_totp(secret)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token+1, secret)
+    False
+    >>> token = get_totp(secret, as_string=True)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token + b'1', secret)
+    False
+    """"""
+    if _is_possible_token(token, token_length=token_length):
+        if clock is None:
+            clock = time.time()
+        for w in range(-window, window+1):
+            if int(token) == get_totp(
+                secret,
+                digest_method=digest_method,
+                token_length=token_length,
+                interval_length=interval_length,
+                clock=int(clock)+(w*interval_length)
+            ):
+                return True
+    return False",llama3.2:1b,"As a senior Python engineer, write a professional Google-style docstring for this function: def valid_totp(
+        token,
+        secret,
+        digest_method=hashlib.sha1,
+        token_length=6,
+        interval_length=30,
+        clock=None,
+        window=0,
+):
+    """"""Check if given token is valid time-based one-time password for given
+    secret.
+
+    :param token: token which is being checked
+    :type token: int or str
+    :param secret: secret for which the token is being checked
+    :type secret: str
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :param window: compensate for clock skew, number of intervals to check on
+        each side of the current time. (default is 0 - only check the current
+        clock time)
+    :type window: int (positive)
+    :return: True, if is valid token, False otherwise
+    :rtype: bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> token = get_totp(secret)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token+1, secret)
+    False
+    >>> token = get_totp(secret, as_string=True)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token + b'1', secret)
+    False
+    """"""
+    if _is_possible_token(token, token_length=token_length):
+        if clock is None:
+            clock = time.time()
+        for w in range(-window, window+1):
+            if int(token) == get_totp(
+                secret,
+                digest_method=digest_method,
+                token_length=token_length,
+                interval_length=interval_length,
+                clock=int(clock)+(w*interval_length)
+            ):
+                return True
+    return False","[{'prompt': 'As a senior Python engineer, write a professional Google-style docstring for this function: def valid_totp(\r\n        token,\r\n        secret,\r\n        digest_method=hashlib.sha1,\r\n        token_length=6,\r\n        interval_length=30,\r\n        clock=None,\r\n        window=0,\r\n):\r\n    """"""Check if given token is valid time-based one-time password for given\r\n    secret.\r\n\r\n    :param token: token which is being checked\r\n    :type token: int or str\r\n    :param secret: secret for which the token is being checked\r\n    :type secret: str\r\n    :param digest_method: method of generating digest (hashlib.sha1 by default)\r\n    :type digest_method: callable\r\n    :param token_length: length of the token (6 by default)\r\n    :type token_length: int\r\n    :param interval_length: length of TOTP interval (30 seconds by default)\r\n    :type interval_length: int\r\n    :param clock: time in epoch seconds to generate totp for, default is now\r\n    :type clock: int\r\n    :param window: compensate for clock skew, number of intervals to check on\r\n        each side of the current time. (default is 0 - only check the current\r\n        clock time)\r\n    :type window: int (positive)\r\n    :return: True, if is valid token, False otherwise\r\n    :rtype: bool\r\n\r\n    >>> secret = b\'MFRGGZDFMZTWQ2LK\'\r\n    >>> token = get_totp(secret)\r\n    >>> valid_totp(token, secret)\r\n    True\r\n    >>> valid_totp(token+1, secret)\r\n    False\r\n    >>> token = get_totp(secret, as_string=True)\r\n    >>> valid_totp(token, secret)\r\n    True\r\n    >>> valid_totp(token + b\'1\', secret)\r\n    False\r\n    """"""\r\n    if _is_possible_token(token, token_length=token_length):\r\n        if clock is None:\r\n            clock = time.time()\r\n        for w in range(-window, window+1):\r\n            if int(token) == get_totp(\r\n                secret,\r\n                digest_method=digest_method,\r\n                token_length=token_length,\r\n                interval_length=interval_length,\r\n                clock=int(clock)+(w*interval_length)\r\n            ):\r\n                return True\r\n    return False', 'output': '```\ndef valid_totp(\n        token,\n        secret,\n        digest_method=None,\n        token_length=6,\n        interval_length=30,\n        clock=None,\n        window=0\n):\n    """"""\n    Check if given token is a valid time-based one-time password for given secret.\n\n    Parameters:\n    token (int or str): the token to be validated\n    secret (str): the secret for which the token is being checked\n    digest_method (callable, optional): method of generating digest. Defaults to hashlib.sha1.\n    token_length (int, optional): length of the token. Defaults to 6.\n    interval_length (int, optional): length of TOTP interval. Defaults to 30 seconds.\n    clock (int, optional): time in epoch seconds to generate totp for, default is now\n    window (int, optional): compensate for clock skew, number of intervals to check on each side of the current time. Default is 0 - only check the current clock time.\n\n    Returns:\n    bool: True if is valid token, False otherwise\n\n    Raises:\n    TypeError: if any input type mismatch\n    ValueError: if any invalid value encountered in the calculation\n    """"""\n    # Validate token and secret types\n    if not isinstance(token, (int, str)):\n        raise TypeError(""token must be an integer or a string"")\n    if not isinstance(secret, str):\n        raise TypeError(""secret must be a string"")\n\n    # Check if token is valid according to the given method and length\n    _is_possible_token(token, token_length=token_length)\n\n    # If clock is not provided, generate it from current time\n    if clock is None:\n        clock = time.time()\n\n    # Iterate over the possible window sizes\n    for w in range(-window, window+1):\n        # Check if the generated token matches with TOTP of the secret\n        if int(token) == get_totp(\n            secret,\n            digest_method=digest_method,\n            token_length=token_length,\n            interval_length=interval_length,\n            clock=int(clock)+(w*interval_length)\n        ):\n            return True\n\n    # If no match found, return False\n    return False\n```'}]","Check if given token is valid time-based one-time password for given
+    secret.
+
+    :param token: token which is being checked
+    :type token: int or str
+    :param secret: secret for which the token is being checked
+    :type secret: str
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :param window: compensate for clock skew, number of intervals to check on
+        each side of the current time. (default is 0 - only check the current
+        clock time)
+    :type window: int (positive)
+    :return: True, if is valid token, False otherwise
+    :rtype: bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> token = get_totp(secret)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token+1, secret)
+    False
+    >>> token = get_totp(secret, as_string=True)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token + b'1', secret)
+    False"

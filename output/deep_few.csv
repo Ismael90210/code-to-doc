@@ -1,0 +1,1136 @@
+filename,function_name,input_code,model,technique,original_doc,prompt_used,generated_doc,clean_docstring
+tadeck/onetimepass,_is_possible_token,"def _is_possible_token(token, token_length=6):
+    """"""Determines if given value is acceptable as a token. Used when validating
+    tokens.
+
+    Currently allows only numeric tokens no longer than 6 chars.
+
+    :param token: token value to be checked
+    :type token: int or str
+    :param token_length: allowed length of token
+    :type token_length: int
+    :return: True if can be a candidate for token, False otherwise
+    :rtype: bool
+
+    >>> _is_possible_token(123456)
+    True
+    >>> _is_possible_token(b'123456')
+    True
+    >>> _is_possible_token(b'abcdef')
+    False
+    >>> _is_possible_token(b'12345678')
+    False
+    """"""
+    if not isinstance(token, bytes):
+        token = six.b(str(token))
+    return token.isdigit() and len(token) <= token_length",deepseek-r1:1.5b,Few-shot,"Determines if given value is acceptable as a token. Used when validating
+    tokens.
+
+    Currently allows only numeric tokens no longer than 6 chars.
+
+    :param token: token value to be checked
+    :type token: int or str
+    :param token_length: allowed length of token
+    :type token_length: int
+    :return: True if can be a candidate for token, False otherwise
+    :rtype: bool
+
+    >>> _is_possible_token(123456)
+    True
+    >>> _is_possible_token(b'123456')
+    True
+    >>> _is_possible_token(b'abcdef')
+    False
+    >>> _is_possible_token(b'12345678')
+    False","Google-style docstrings are a structured format for documenting Python code, they follow a specific format including a summary line, detailed explanations, and dedicated sections for parameters, return values, and exceptions.
+
+Examples of Google-style docstrings:
+
+Function:
+def add(a, b): return a + b
+Docstring:
+Parameters: a first number, b first number Returns: sum of two numbers
+
+Now, write a docstring for the following function:
+def _is_possible_token(token, token_length=6):
+    """"""Determines if given value is acceptable as a token. Used when validating
+    tokens.
+
+    Currently allows only numeric tokens no longer than 6 chars.
+
+    :param token: token value to be checked
+    :type token: int or str
+    :param token_length: allowed length of token
+    :type token_length: int
+    :return: True if can be a candidate for token, False otherwise
+    :rtype: bool
+
+    >>> _is_possible_token(123456)
+    True
+    >>> _is_possible_token(b'123456')
+    True
+    >>> _is_possible_token(b'abcdef')
+    False
+    >>> _is_possible_token(b'12345678')
+    False
+    """"""
+    if not isinstance(token, bytes):
+        token = six.b(str(token))
+    return token.isdigit() and len(token) <= token_length
+Output:","<think>
+Okay, so I'm trying to write a Google-style docstring for this function called _is_possible_token. Let me start by reading through the example they gave to understand how the structure should look.
+
+In the example, there's a function definition followed by a multi-line docstring that starts with a summary line, then details, parameters, return values, and exceptions. I need to follow this format for my own docstring.
+
+First, I'll start with the summary line. The docstring should briefly describe what the function does. Looking at the example, it says something like ""Determines if given value is acceptable as a token."" That seems clear enough.
+
+Next, I need to detail the parameters. The function takes two arguments: token and token_length. The first is the actual token value, which can be an int or a string (or bytes). The second parameter specifies the allowed length of that token. So in my docstring, I should list these with their types and any default values.
+
+I notice that there's also a comment above the function that explains why it was changed from only allowing numeric tokens to no longer being restricted. That's important to include, as it shows an improvement or change made in the function. I'll mention this below the summary line but not part of the docstring itself.
+
+Now, looking at the return value, the function returns a boolean: True if the token is acceptable, and False otherwise. So I should note that clearly.
+
+I also need to include a list of exceptions or errors that can occur. From the example, it's mentioned that a ValueError will be raised in cases where the token isn't valid. I'll add that as an exception clause.
+
+Putting this together, my docstring should have a summary line explaining what the function does, followed by detailed parameters, return value, and exceptions with appropriate documentation. Also, I should mention any default values for keyword-only arguments if they are specified in Python (like token_length). But looking at the provided code snippet, there's no keyword-only parameter, so I can omit that.
+
+I need to ensure proper syntax and indentation, making it look clean like Google-style docstrings. The summary line is a single sentence, followed by several indented sections for parameters, return value, exceptions, etc., each starting with a bullet point or list item.
+
+Let me check if all the elements are present:
+- Summary line: ""Determines if given value is acceptable as a token.""
+- Parameters: token (int or str or bytes) and token_length (default 6)
+- Return value: bool
+- Exceptions: ValueError
+
+I think that's everything. Now, I'll format it properly, ensuring each section is clearly separated and the documentation is concise and accurate.
+</think>
+
+Here is the Google-style docstring for the function _is_possible_token:
+
+```python
+""""""
+Determines if given value is acceptable as a token. Used when validating tokens.
+
+Currently allows only numeric tokens no longer than 6 chars.
+
+Parameters:
+    token: token value to be checked (int or str)
+           :type token: int or str
+
+    token_length: allowed length of token (default 6)
+              :type token_length: int
+
+Returns:
+    True if can be a candidate for token, False otherwise
+Return type: bool
+
+Examples:
+>>> _is_possible_token(123456)
+True
+>>> _is_possible_token(b'123456')
+True
+>>> _is_possible_token(b'abcdef')
+False
+>>> _is_possible_token(b'12345678')
+False
+""""""
+
+:param token: token value to be checked (int or str)
+:type token, int or str
+
+:param token_length: allowed length of token (default 6)
+:type token_length, int
+
+:return: True if can be a candidate for token, False otherwise
+:return type: bool
+
+:exc ValueError: If the token is not numeric or too long.
+""""""","Determines if given value is acceptable as a token. Used when validating tokens.
+
+Currently allows only numeric tokens no longer than 6 chars.
+
+Parameters:
+    token: token value to be checked (int or str)
+           :type token: int or str
+
+    token_length: allowed length of token (default 6)
+              :type token_length: int
+
+Returns:
+    True if can be a candidate for token, False otherwise
+Return type: bool
+
+Examples:
+>>> _is_possible_token(123456)
+True
+>>> _is_possible_token(b'123456')
+True
+>>> _is_possible_token(b'abcdef')
+False
+>>> _is_possible_token(b'12345678')
+False"
+tadeck/onetimepass,get_hotp,"def get_hotp(
+        secret,
+        intervals_no,
+        as_string=False,
+        casefold=True,
+        digest_method=hashlib.sha1,
+        token_length=6,
+):
+    """"""
+    Get HMAC-based one-time password on the basis of given secret and
+    interval number.
+
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str or unicode
+    :param intervals_no: interval number used for getting different tokens, it
+        is incremented with each use
+    :type intervals_no: int
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param casefold: True (default), if should accept also lowercase alphabet
+    :type casefold: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: generated HOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=1)
+    765705
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2)
+    816065
+    >>> result = get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2, as_string=True)
+    >>> result == b'816065'
+    True
+    """"""
+    if isinstance(secret, six.string_types):
+        # It is unicode, convert it to bytes
+        secret = secret.encode('utf-8')
+    # Get rid of all the spacing:
+    secret = secret.replace(b' ', b'')
+    try:
+        key = base64.b32decode(secret, casefold=casefold)
+    except (TypeError):
+        raise TypeError('Incorrect secret')
+    msg = struct.pack('>Q', intervals_no)
+    hmac_digest = hmac.new(key, msg, digest_method).digest()
+    ob = hmac_digest[19] if six.PY3 else ord(hmac_digest[19])
+    o = ob & 15
+    token_base = struct.unpack('>I', hmac_digest[o:o + 4])[0] & 0x7fffffff
+    token = token_base % (10 ** token_length)
+    if as_string:
+        # TODO: should as_string=True return unicode, not bytes?
+        return six.b('{{:0{}d}}'.format(token_length).format(token))
+    else:
+        return token",deepseek-r1:1.5b,Few-shot,"Get HMAC-based one-time password on the basis of given secret and
+    interval number.
+
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str or unicode
+    :param intervals_no: interval number used for getting different tokens, it
+        is incremented with each use
+    :type intervals_no: int
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param casefold: True (default), if should accept also lowercase alphabet
+    :type casefold: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: generated HOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=1)
+    765705
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2)
+    816065
+    >>> result = get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2, as_string=True)
+    >>> result == b'816065'
+    True","Google-style docstrings are a structured format for documenting Python code, they follow a specific format including a summary line, detailed explanations, and dedicated sections for parameters, return values, and exceptions.
+
+Examples of Google-style docstrings:
+
+Function:
+def add(a, b): return a + b
+Docstring:
+Parameters: a first number, b first number Returns: sum of two numbers
+
+Now, write a docstring for the following function:
+def get_hotp(
+        secret,
+        intervals_no,
+        as_string=False,
+        casefold=True,
+        digest_method=hashlib.sha1,
+        token_length=6,
+):
+    """"""
+    Get HMAC-based one-time password on the basis of given secret and
+    interval number.
+
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str or unicode
+    :param intervals_no: interval number used for getting different tokens, it
+        is incremented with each use
+    :type intervals_no: int
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param casefold: True (default), if should accept also lowercase alphabet
+    :type casefold: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: generated HOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=1)
+    765705
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2)
+    816065
+    >>> result = get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2, as_string=True)
+    >>> result == b'816065'
+    True
+    """"""
+    if isinstance(secret, six.string_types):
+        # It is unicode, convert it to bytes
+        secret = secret.encode('utf-8')
+    # Get rid of all the spacing:
+    secret = secret.replace(b' ', b'')
+    try:
+        key = base64.b32decode(secret, casefold=casefold)
+    except (TypeError):
+        raise TypeError('Incorrect secret')
+    msg = struct.pack('>Q', intervals_no)
+    hmac_digest = hmac.new(key, msg, digest_method).digest()
+    ob = hmac_digest[19] if six.PY3 else ord(hmac_digest[19])
+    o = ob & 15
+    token_base = struct.unpack('>I', hmac_digest[o:o + 4])[0] & 0x7fffffff
+    token = token_base % (10 ** token_length)
+    if as_string:
+        # TODO: should as_string=True return unicode, not bytes?
+        return six.b('{{:0{}d}}'.format(token_length).format(token))
+    else:
+        return token
+Output:","<think>
+Okay, I need to write a Google-style docstring for the function `get_hotp`. Let me start by recalling what Google-style docstrings are. They usually have a summary line, detailed explanations with parameters and return values, followed by exceptions if any.
+
+Looking at the provided examples, I see that the docstring starts with a heading, then explains each section in bullet points or comments. Each parameter is listed with its type and description. The return value is specified using `:param` tags and uses an `:rtype:` for return types.
+
+Now, let me look at the given function code:
+
+```python
+def get_hotp(
+    secret,
+    intervals_no,
+    as_string=False,
+    casefold=True,
+    digest_method=hashlib.sha1,
+    token_length=6,
+):
+    ...
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str or unicode
+    :param intervals_no: interval number used for getting different tokens, it's incremented with each use
+    :type intervals_no: int
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param casefold: True (default), if should accept also lowercase alphabet
+    :type casefold: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: generated HOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=1)
+    765705
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2)
+    816065
+    >>> result = get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2, as_string=True)
+    >>> result == b'816065'
+    True
+    """"""
+```
+
+I can see that the function has several parameters with their types and descriptions. Each parameter is followed by a description in bullet points.
+
+The return value is `:return` statement indicating it returns an integer or string, specified as :rtype: int or str.
+
+Now, I need to write a docstring following Google's style. Let me structure it:
+
+1. Title
+2. Summary line explaining what the function does.
+3. Parameters section with each parameter's name, type, and description.
+4. Return section detailing what is returned.
+5. Exceptions if applicable.
+
+Let me start drafting each part step by step.
+
+Starting with the title: ""get_hotp"" since that's the function name.
+
+Next, a summary line explaining the purpose of the function. From the example, it seems to generate an expired token ( HOTP) based on a secret and interval.
+
+Then, list out all parameters, each in bullet points with their names, types, and descriptions.
+
+After the parameters, specify what the function returns as per the return statement.
+
+Finally, any exceptions or warnings if there are any mentioned.
+
+Putting it all together:
+
+The docstring should look something like this:
+
+```
+def get_hotp(
+    secret,
+    intervals_no,
+    as_string=False,
+    casefold=True,
+    digest_method=hashlib.sha1,
+    token_length=6,
+) -> int or str:
+    """"""
+    Generate an expired token (HTTP Password-Check-String) based on a given secret and interval.
+
+    :param secret: The base32-encoded string acting as the secret key.
+    :type secret: str or unicode
+    
+    :param intervals_no: An integer representing the interval number used for generating different tokens.
+    :type intervals_no: int
+    
+    :param as_string: Whether to return the token as a binary string (True) or as an integer (False).
+    :type as_string: bool
+    
+    :param casefold: Whether the base32-encoded key should be treated as lowercase. Default is True.
+    :type casefold: bool
+    
+    :param digest_method: A callable used to generate the HMAC-MDS digest. Defaults to hashlib.sha1.
+    :type digest_method: callable
+    
+    :param token_length: The length of the generated token (default 6). 
+    :type token_length: int
+
+    Returns an expired password for verification purposes.
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=1)
+    765705
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2)
+    816065
+    >>> result = get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2, as_string=True)
+    >>> result == b'816065'
+    True
+    """"""
+```
+
+I'll make sure to include all the parameters and their details in bullet form under ""Parameters."" Then specify what it returns. Also, I should mention any exceptions if applicable.
+
+Wait, looking back at the example, there are no exceptions mentioned for this function. So perhaps that's not necessary here.
+
+Putting it all together as a markdown string.
+</think>
+
+```markdown
+def get_hotp(
+    secret,
+    intervals_no,
+    as_string=False,
+    casefold=True,
+    digest_method=hashlib.sha1,
+    token_length=6,
+) -> int or str:
+    """"""
+    Generate an expired token (HTTP Password-Check-String) based on a given secret and interval.
+
+    :param secret: The base32-encoded string acting as the secret key.
+    :type secret: str or unicode
+    
+    :param intervals_no: An integer representing the interval number used for generating different tokens.
+    :type intervals_no: int
+    
+    :param as_string: Whether to return the token as a binary string (True) or as an integer (False).
+    :type as_string: bool
+    
+    :param casefold: Whether the base32-encoded key should be treated as lowercase. Default is True.
+    :type casefold: bool
+    
+    :param digest_method: A callable used to generate the HMAC-MDS digest. Defaults to hashlib.sha1.
+    :type digest_method: callable
+    
+    :param token_length: The length of the generated token (default 6). 
+    :type token_length: int
+
+    Returns an expired password for verification purposes.
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=1)
+    765705
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2)
+    816065
+    >>> result = get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2, as_string=True)
+    >>> result == b'816065'
+    True
+    """"""
+```","```
+
+I can see that the function has several parameters with their types and descriptions. Each parameter is followed by a description in bullet points.
+
+The return value is `:return` statement indicating it returns an integer or string, specified as :rtype: int or str.
+
+Now, I need to write a docstring following Google's style. Let me structure it:
+
+1. Title
+2. Summary line explaining what the function does.
+3. Parameters section with each parameter's name, type, and description.
+4. Return section detailing what is returned.
+5. Exceptions if applicable.
+
+Let me start drafting each part step by step.
+
+Starting with the title: ""get_hotp"" since that's the function name.
+
+Next, a summary line explaining the purpose of the function. From the example, it seems to generate an expired token ( HOTP) based on a secret and interval.
+
+Then, list out all parameters, each in bullet points with their names, types, and descriptions.
+
+After the parameters, specify what the function returns as per the return statement.
+
+Finally, any exceptions or warnings if there are any mentioned.
+
+Putting it all together:
+
+The docstring should look something like this:
+
+```
+def get_hotp(
+    secret,
+    intervals_no,
+    as_string=False,
+    casefold=True,
+    digest_method=hashlib.sha1,
+    token_length=6,
+) -> int or str:
+      
+```
+
+I'll make sure to include all the parameters and their details in bullet form under ""Parameters."" Then specify what it returns. Also, I should mention any exceptions if applicable.
+
+Wait, looking back at the example, there are no exceptions mentioned for this function. So perhaps that's not necessary here.
+
+Putting it all together as a markdown string.
+</think>
+
+```markdown
+def get_hotp(
+    secret,
+    intervals_no,
+    as_string=False,
+    casefold=True,
+    digest_method=hashlib.sha1,
+    token_length=6,
+) -> int or str:"
+tadeck/onetimepass,get_totp,"def get_totp(
+        secret,
+        as_string=False,
+        digest_method=hashlib.sha1,
+        token_length=6,
+        interval_length=30,
+        clock=None,
+):
+    """"""Get time-based one-time password on the basis of given secret and time.
+
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :return: generated TOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK')
+    True
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK', as_string=True)
+    False
+    """"""
+    if clock is None:
+        clock = time.time()
+    interv_no = int(clock) // interval_length
+    return get_hotp(
+        secret,
+        intervals_no=interv_no,
+        as_string=as_string,
+        digest_method=digest_method,
+        token_length=token_length,
+    )",deepseek-r1:1.5b,Few-shot,"Get time-based one-time password on the basis of given secret and time.
+
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :return: generated TOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK')
+    True
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK', as_string=True)
+    False","Google-style docstrings are a structured format for documenting Python code, they follow a specific format including a summary line, detailed explanations, and dedicated sections for parameters, return values, and exceptions.
+
+Examples of Google-style docstrings:
+
+Function:
+def add(a, b): return a + b
+Docstring:
+Parameters: a first number, b first number Returns: sum of two numbers
+
+Now, write a docstring for the following function:
+def get_totp(
+        secret,
+        as_string=False,
+        digest_method=hashlib.sha1,
+        token_length=6,
+        interval_length=30,
+        clock=None,
+):
+    """"""Get time-based one-time password on the basis of given secret and time.
+
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :return: generated TOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK')
+    True
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK', as_string=True)
+    False
+    """"""
+    if clock is None:
+        clock = time.time()
+    interv_no = int(clock) // interval_length
+    return get_hotp(
+        secret,
+        intervals_no=interv_no,
+        as_string=as_string,
+        digest_method=digest_method,
+        token_length=token_length,
+    )
+Output:","<think>
+Okay, so I'm trying to write a Google-style docstring for this function called get_totp. Let me look at the example they provided first to understand how the structure should be.
+
+In the example, the function is adding two numbers. The docstring has a summary line, followed by parameter details, return value, and exceptions. So I think my docstring should follow that format too.
+
+First, I'll need the summary line. It says ""Get time-based one-time password on the basis of given secret and time."" That seems to cover what the function does.
+
+Next are the parameters. The function has several parameters: secret, as_string, digest_method, token_length, interval_length, and clock. Each parameter should have a description explaining what it is and its type. For example, secret is a base32-encoded string acting as a secret key. Its type is str. I need to describe each parameter clearly.
+
+Then comes the return value section. The function returns either an int or str based on whether as_string is True or False. So in the docstring, I'll indicate that it's an integer or string and mention what kind of values it can hold.
+
+After that, I should list possible exceptions. It seems like there might be an exception when generating a TOTP token, but looking at the example code provided, there doesn't seem to be any obvious exceptions in place. Maybe the function returns None if something goes wrong, or perhaps exceptions are handled elsewhere. For now, since it's a Google-style docstring, I'll note that it includes possible exceptions.
+
+Finally, I need an example part where you can test the function by providing some input and verifying the output. The user has already provided examples in their code snippet, so using those as references makes sense.
+
+Let me make sure all these parts are included in a well-structured format. Using bullet points for parameters will make it easy to read. I'll also make sure that each parameter's description is clear and concise.
+</think>
+
+**Google-style docstring example**
+
+```python
+def get_totp(
+    secret,
+    as_string=False,
+    digest_method=hashlib.sha1,
+    token_length=6,
+    interval_length=30,
+    clock=None,
+):
+    """"""Get time-based one-time password on the basis of given secret and time.
+
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate TOTP for, default is now
+    :type clock: int
+
+    Returns:
+        An integer or str based on whether as_string is True or False.
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+            get_totp(b'MFRGGZDFMZTWQ2LK')
+    True
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', as_string=True) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK', as_string=True)
+    False
+
+    """"""
+    if clock is None:
+        clock = time.time()
+    interv_no = int(clock) // interval_length
+    return get_hotp(
+        secret,
+        intervals_no=interv_no,
+        as_string=as_string,
+        digest_method=digest_method,
+        token_length=token_length,
+    )
+```
+
+This docstring follows the structure of a Google-style docstring, including:
+- Summary line: ""Get time-based one-time password on the basis of given secret and time.""
+- Parameter details with descriptions
+- Return value section indicating it returns an integer or string
+- Possible exceptions (indicated in comments)","Get time-based one-time password on the basis of given secret and time.
+
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate TOTP for, default is now
+    :type clock: int
+
+    Returns:
+        An integer or str based on whether as_string is True or False.
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+            get_totp(b'MFRGGZDFMZTWQ2LK')
+    True
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', as_string=True) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK', as_string=True)
+    False"
+tadeck/onetimepass,valid_hotp,"def valid_hotp(
+        token,
+        secret,
+        last=1,
+        trials=1000,
+        digest_method=hashlib.sha1,
+        token_length=6,
+):
+    """"""Check if given token is valid for given secret. Return interval number
+    that was successful, or False if not found.
+
+    :param token: token being checked
+    :type token: int or str
+    :param secret: secret for which token is checked
+    :type secret: str
+    :param last: last used interval (start checking with next one)
+    :type last: int
+    :param trials: number of intervals to check after 'last'
+    :type trials: int
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: interval number, or False if check unsuccessful
+    :rtype: int or bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> valid_hotp(713385, secret, last=1, trials=5)
+    4
+    >>> valid_hotp(865438, secret, last=1, trials=5)
+    False
+    >>> valid_hotp(713385, secret, last=4, trials=5)
+    False
+    """"""
+    if not _is_possible_token(token, token_length=token_length):
+        return False
+    for i in six.moves.xrange(last + 1, last + trials + 1):
+        token_candidate = get_hotp(
+            secret=secret,
+            intervals_no=i,
+            digest_method=digest_method,
+            token_length=token_length,
+        )
+        if token_candidate == int(token):
+            return i
+    return False",deepseek-r1:1.5b,Few-shot,"Check if given token is valid for given secret. Return interval number
+    that was successful, or False if not found.
+
+    :param token: token being checked
+    :type token: int or str
+    :param secret: secret for which token is checked
+    :type secret: str
+    :param last: last used interval (start checking with next one)
+    :type last: int
+    :param trials: number of intervals to check after 'last'
+    :type trials: int
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: interval number, or False if check unsuccessful
+    :rtype: int or bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> valid_hotp(713385, secret, last=1, trials=5)
+    4
+    >>> valid_hotp(865438, secret, last=1, trials=5)
+    False
+    >>> valid_hotp(713385, secret, last=4, trials=5)
+    False","Google-style docstrings are a structured format for documenting Python code, they follow a specific format including a summary line, detailed explanations, and dedicated sections for parameters, return values, and exceptions.
+
+Examples of Google-style docstrings:
+
+Function:
+def add(a, b): return a + b
+Docstring:
+Parameters: a first number, b first number Returns: sum of two numbers
+
+Now, write a docstring for the following function:
+def valid_hotp(
+        token,
+        secret,
+        last=1,
+        trials=1000,
+        digest_method=hashlib.sha1,
+        token_length=6,
+):
+    """"""Check if given token is valid for given secret. Return interval number
+    that was successful, or False if not found.
+
+    :param token: token being checked
+    :type token: int or str
+    :param secret: secret for which token is checked
+    :type secret: str
+    :param last: last used interval (start checking with next one)
+    :type last: int
+    :param trials: number of intervals to check after 'last'
+    :type trials: int
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: interval number, or False if check unsuccessful
+    :rtype: int or bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> valid_hotp(713385, secret, last=1, trials=5)
+    4
+    >>> valid_hotp(865438, secret, last=1, trials=5)
+    False
+    >>> valid_hotp(713385, secret, last=4, trials=5)
+    False
+    """"""
+    if not _is_possible_token(token, token_length=token_length):
+        return False
+    for i in six.moves.xrange(last + 1, last + trials + 1):
+        token_candidate = get_hotp(
+            secret=secret,
+            intervals_no=i,
+            digest_method=digest_method,
+            token_length=token_length,
+        )
+        if token_candidate == int(token):
+            return i
+    return False
+Output:","<think>
+Alright, let me walk through how I came up with the answer for this Python function's Google-style docstring. 
+
+First, I need to understand what a Google-style docstring entails. From what I know, it should have a summary line that explains the purpose of the function, followed by detailed explanations of each parameter and return value. It also mentions possible exceptions or errors.
+
+Looking at the provided function `valid_hotp`, I see it's designed to check if a given token is valid for a secret using some specific parameters like digest method, trials, and last. The function returns an interval number or False if not found.
+
+I started by identifying what each parameter does. The `token` is the input being checked against `secret`. The `digest_method` determines how the token is generated, with `hashlib.sha1` being the default. The `token_length` sets a maximum length for the token, which defaults to 6 characters.
+
+Next, I thought about the return value. It's supposed to indicate whether a valid interval was found and what that number is. So the docstring should reflect that.
+
+I considered the parameters in detail:
+- **Token**: The input being checked.
+- **Secret**: The reference string used for comparison.
+- **Last**: The starting point for checking intervals, with an optional default value.
+- **Trials**: The number of intervals to check after setting `last`.
+- **Digest Method**: The function used to generate the token candidate; it can be customized.
+
+For each parameter, I listed their descriptions and types, making sure to cover all aspects like possible values and data types they accept. This helps anyone reading the docstring understand how to use the function correctly.
+
+I also thought about any exceptions or error conditions. Since `valid_hotp` returns False if it's not found, that's a clear indication of failure with an explanation.
+
+Finally, I included usage examples based on the user provided code, showing different ways to call the function and what outputs to expect. This makes the docstring practical for others who might implement this logic in their own projects.
+
+Putting it all together, I crafted a comprehensive docstring that covers all these elements in a clear and structured manner, aligning with Google's style guide.
+</think>
+
+Here is the step-by-step explanation of the function:
+
+1. **Function Definition**: The function `valid_hotp` takes several parameters:
+   - `token`: The token being checked against the secret.
+   - `secret`: The reference string for comparison.
+   - Optional parameters: `last`, `trials`, and `digest_method`.
+   
+2. **Default Values**: 
+   - The default value for `last` is 1.
+   - The default for `trials` is 1000.
+   - The default for `digest_method` is `hashlib.sha1`.
+
+3. **Return Value**:
+   - Returns an interval number (an integer) if a valid token is found.
+   - Returns False if no valid token is found after checking all possibilities.
+
+4. **Function Logic**:
+   - Checks if the given token is ""possible"" based on `token_length` and returns False if not possible.
+   - Iterates through candidate tokens starting from `last + 1` to `last + trials`.
+   - For each interval, generates a potential token using the provided parameters.
+   - If this generated token matches the input `token`, returns the current interval number.
+
+5. **Return Type**: Returns an integer (the interval number) or False if unsuccessful.
+
+**Example Usage**:
+```python
+>>> secret = b'MFRGGZDFMZTWQ2LK'
+>>> valid_hotp(713385, secret, last=1, trials=5)
+4
+>>> valid_hotp(865438, secret, last=1, trials=5)
+False
+>>> valid_hotp(713385, secret, last=4, trials=5)
+False
+```",">>> secret = b'MFRGGZDFMZTWQ2LK'
+>>> valid_hotp(713385, secret, last=1, trials=5)
+4
+>>> valid_hotp(865438, secret, last=1, trials=5)
+False
+>>> valid_hotp(713385, secret, last=4, trials=5)
+False"
+tadeck/onetimepass,valid_totp,"def valid_totp(
+        token,
+        secret,
+        digest_method=hashlib.sha1,
+        token_length=6,
+        interval_length=30,
+        clock=None,
+        window=0,
+):
+    """"""Check if given token is valid time-based one-time password for given
+    secret.
+
+    :param token: token which is being checked
+    :type token: int or str
+    :param secret: secret for which the token is being checked
+    :type secret: str
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :param window: compensate for clock skew, number of intervals to check on
+        each side of the current time. (default is 0 - only check the current
+        clock time)
+    :type window: int (positive)
+    :return: True, if is valid token, False otherwise
+    :rtype: bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> token = get_totp(secret)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token+1, secret)
+    False
+    >>> token = get_totp(secret, as_string=True)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token + b'1', secret)
+    False
+    """"""
+    if _is_possible_token(token, token_length=token_length):
+        if clock is None:
+            clock = time.time()
+        for w in range(-window, window+1):
+            if int(token) == get_totp(
+                secret,
+                digest_method=digest_method,
+                token_length=token_length,
+                interval_length=interval_length,
+                clock=int(clock)+(w*interval_length)
+            ):
+                return True
+    return False",deepseek-r1:1.5b,Few-shot,"Check if given token is valid time-based one-time password for given
+    secret.
+
+    :param token: token which is being checked
+    :type token: int or str
+    :param secret: secret for which the token is being checked
+    :type secret: str
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :param window: compensate for clock skew, number of intervals to check on
+        each side of the current time. (default is 0 - only check the current
+        clock time)
+    :type window: int (positive)
+    :return: True, if is valid token, False otherwise
+    :rtype: bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> token = get_totp(secret)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token+1, secret)
+    False
+    >>> token = get_totp(secret, as_string=True)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token + b'1', secret)
+    False","Google-style docstrings are a structured format for documenting Python code, they follow a specific format including a summary line, detailed explanations, and dedicated sections for parameters, return values, and exceptions.
+
+Examples of Google-style docstrings:
+
+Function:
+def add(a, b): return a + b
+Docstring:
+Parameters: a first number, b first number Returns: sum of two numbers
+
+Now, write a docstring for the following function:
+def valid_totp(
+        token,
+        secret,
+        digest_method=hashlib.sha1,
+        token_length=6,
+        interval_length=30,
+        clock=None,
+        window=0,
+):
+    """"""Check if given token is valid time-based one-time password for given
+    secret.
+
+    :param token: token which is being checked
+    :type token: int or str
+    :param secret: secret for which the token is being checked
+    :type secret: str
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :param window: compensate for clock skew, number of intervals to check on
+        each side of the current time. (default is 0 - only check the current
+        clock time)
+    :type window: int (positive)
+    :return: True, if is valid token, False otherwise
+    :rtype: bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> token = get_totp(secret)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token+1, secret)
+    False
+    >>> token = get_totp(secret, as_string=True)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token + b'1', secret)
+    False
+    """"""
+    if _is_possible_token(token, token_length=token_length):
+        if clock is None:
+            clock = time.time()
+        for w in range(-window, window+1):
+            if int(token) == get_totp(
+                secret,
+                digest_method=digest_method,
+                token_length=token_length,
+                interval_length=interval_length,
+                clock=int(clock)+(w*interval_length)
+            ):
+                return True
+    return False
+Output:","<think>
+Alright, I need to write a Google-style docstring for the function `valid_totp`. Let me start by recalling what Google-style docstrings look like. They have a summary line that explains what the function does and returns. Then there are separate sections explaining each parameter, their types, and return values or exceptions.
+
+First, I'll identify the purpose of this function. It checks if a given token is valid for a one-time password (TOTP). The parameters include various settings like digest method, token length, interval length, clock time, and window. The function returns True or False based on whether the token is valid.
+
+I should list all the parameters with their types. That includes `token`, which can be an int or str; `digest_method` as a callable object, so I'll note that it's a function like `hashlib.sha1`; similar for other methods like `interval_length`. The keyword arguments like `clock` and `window` are described as well.
+
+Next, the return values. It returns `True` if valid, else `False`. So in the summary line, I should mention that it returns a boolean value indicating validity.
+
+Now, putting this all together, I'll start with a summary line that states the function checks token validity using TOTP parameters and returns True or False. Then a more detailed description of each parameter, including their types where applicable, followed by the return statement.
+
+I also need to make sure the docstring is concise but informative, following the structure expected in Google-style documentation.
+</think>
+
+# Google-Style Docstring for `valid_totp`
+
+## Summary
+The `valid_totp` function checks if a given token is valid according to the TOTP (Time-based One-Time Password) protocol. It returns `True` if the token is valid, and `False` otherwise.
+
+---
+
+## Parameters
+
+The following parameters are required:
+
+- **token** (`int` or `str`)
+  - A hash digest of the secret.
+  
+- **digest_method** (`callable`)
+  - A hashing function used to generate the initial TOTP token. Defaults to `hashlib.sha1`.
+  
+- **token_length** (`int`)
+  - The length of the hashed token in bytes. Defaults to 6.
+  
+- **interval_length** (`int`)
+  - The interval (in seconds) after which a new TOTP token is generated, based on the current time. Defaults to 30 seconds.
+  
+- **clock** (`int` or `datetime.time`)
+  - A starting point for generating the TOTP token at the current time. Defaults to `now`.
+  
+- **window** (`int`)
+  - Determines how many intervals before and after the clock time to check for token validity. Defaults to 0.
+
+## Return Value
+
+The function returns a boolean value indicating whether the provided token is valid according to the TOTP protocol.","<think>
+Alright, I need to write a Google-style docstring for the function `valid_totp`. Let me start by recalling what Google-style docstrings look like. They have a summary line that explains what the function does and returns. Then there are separate sections explaining each parameter, their types, and return values or exceptions."

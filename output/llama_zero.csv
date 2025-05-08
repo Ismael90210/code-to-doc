@@ -1,0 +1,975 @@
+filename,function_name,input_code,model,technique,generated_doc,original_doc,prompt_used,clean_docstring
+tadeck/onetimepass,_is_possible_token,"def _is_possible_token(token, token_length=6):
+    """"""Determines if given value is acceptable as a token. Used when validating
+    tokens.
+
+    Currently allows only numeric tokens no longer than 6 chars.
+
+    :param token: token value to be checked
+    :type token: int or str
+    :param token_length: allowed length of token
+    :type token_length: int
+    :return: True if can be a candidate for token, False otherwise
+    :rtype: bool
+
+    >>> _is_possible_token(123456)
+    True
+    >>> _is_possible_token(b'123456')
+    True
+    >>> _is_possible_token(b'abcdef')
+    False
+    >>> _is_possible_token(b'12345678')
+    False
+    """"""
+    if not isinstance(token, bytes):
+        token = six.b(str(token))
+    return token.isdigit() and len(token) <= token_length",llama3.2:1b,Zero-shot,"```
+def _is_possible_token(
+    token: int | str,
+    token_length: int = 6
+):
+    """"""
+    Determines if given value is acceptable as a token. Used when validating tokens.
+
+    Currently allows only numeric tokens no longer than 6 characters.
+
+    :param token: The value to be checked.
+    :type token: int or str (integer or string)
+    :param token_length: The maximum allowed length of the token.
+    :type token_length: int
+    :return: True if the given token can be a candidate for token, False otherwise.
+    :rtype: bool
+
+    Examples:
+        >>> _is_possible_token(123456)
+        True
+        >>> _is_possible_token(b'123456')
+        True
+        >>> _is_possible_token(b'abcdef')
+        False
+        >>> _is_possible_token(b'12345678')
+        False
+    """"""
+
+    # Ensure input token is either an integer or a string
+    if not isinstance(token, (int, str)):
+        raise TypeError(""Token must be of type int or str"")
+
+    # Convert input to bytes if necessary and check for length
+    if isinstance(token, int):
+        token = six.b(str(token))
+    if len(six.b(str(token))) > token_length:
+        return False
+
+    # Check if token is numeric and within the allowed length
+    return token.isdigit() and len(token) <= token_length
+```","Determines if given value is acceptable as a token. Used when validating
+    tokens.
+
+    Currently allows only numeric tokens no longer than 6 chars.
+
+    :param token: token value to be checked
+    :type token: int or str
+    :param token_length: allowed length of token
+    :type token_length: int
+    :return: True if can be a candidate for token, False otherwise
+    :rtype: bool
+
+    >>> _is_possible_token(123456)
+    True
+    >>> _is_possible_token(b'123456')
+    True
+    >>> _is_possible_token(b'abcdef')
+    False
+    >>> _is_possible_token(b'12345678')
+    False","As a senior Python engineer, write a professional Google-style docstring for this function: def _is_possible_token(token, token_length=6):
+    """"""Determines if given value is acceptable as a token. Used when validating
+    tokens.
+
+    Currently allows only numeric tokens no longer than 6 chars.
+
+    :param token: token value to be checked
+    :type token: int or str
+    :param token_length: allowed length of token
+    :type token_length: int
+    :return: True if can be a candidate for token, False otherwise
+    :rtype: bool
+
+    >>> _is_possible_token(123456)
+    True
+    >>> _is_possible_token(b'123456')
+    True
+    >>> _is_possible_token(b'abcdef')
+    False
+    >>> _is_possible_token(b'12345678')
+    False
+    """"""
+    if not isinstance(token, bytes):
+        token = six.b(str(token))
+    return token.isdigit() and len(token) <= token_length","Determines if given value is acceptable as a token. Used when validating tokens.
+
+    Currently allows only numeric tokens no longer than 6 characters.
+
+    :param token: The value to be checked.
+    :type token: int or str (integer or string)
+    :param token_length: The maximum allowed length of the token.
+    :type token_length: int
+    :return: True if the given token can be a candidate for token, False otherwise.
+    :rtype: bool
+
+    Examples:
+        >>> _is_possible_token(123456)
+        True
+        >>> _is_possible_token(b'123456')
+        True
+        >>> _is_possible_token(b'abcdef')
+        False
+        >>> _is_possible_token(b'12345678')
+        False"
+tadeck/onetimepass,get_hotp,"def get_hotp(
+        secret,
+        intervals_no,
+        as_string=False,
+        casefold=True,
+        digest_method=hashlib.sha1,
+        token_length=6,
+):
+    """"""
+    Get HMAC-based one-time password on the basis of given secret and
+    interval number.
+
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str or unicode
+    :param intervals_no: interval number used for getting different tokens, it
+        is incremented with each use
+    :type intervals_no: int
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param casefold: True (default), if should accept also lowercase alphabet
+    :type casefold: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: generated HOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=1)
+    765705
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2)
+    816065
+    >>> result = get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2, as_string=True)
+    >>> result == b'816065'
+    True
+    """"""
+    if isinstance(secret, six.string_types):
+        # It is unicode, convert it to bytes
+        secret = secret.encode('utf-8')
+    # Get rid of all the spacing:
+    secret = secret.replace(b' ', b'')
+    try:
+        key = base64.b32decode(secret, casefold=casefold)
+    except (TypeError):
+        raise TypeError('Incorrect secret')
+    msg = struct.pack('>Q', intervals_no)
+    hmac_digest = hmac.new(key, msg, digest_method).digest()
+    ob = hmac_digest[19] if six.PY3 else ord(hmac_digest[19])
+    o = ob & 15
+    token_base = struct.unpack('>I', hmac_digest[o:o + 4])[0] & 0x7fffffff
+    token = token_base % (10 ** token_length)
+    if as_string:
+        # TODO: should as_string=True return unicode, not bytes?
+        return six.b('{{:0{}d}}'.format(token_length).format(token))
+    else:
+        return token",llama3.2:1b,Zero-shot,"```
+def get_hotp(
+    secret: str or bytes,
+    intervals_no: int,
+    as_string: bool = False,
+    casefold: bool = True,
+    digest_method: callable = hashlib.sha1,
+    token_length: int = 6
+):
+    """"""
+    Get HMAC-based one-time password on the basis of given secret and
+    interval number.
+
+    Parameters
+    ----------
+    secret : str or bytes, the base32-encoded string acting as secret key.
+    intervals_no : int, interval number used for getting different tokens,
+        it is incremented with each use.
+    as_string : bool, True if result should be padded string, False otherwise.
+        Default: False (bytes returned).
+    casefold : bool, True (default), if should accept also lowercase alphabet
+        Default: True.
+    digest_method : callable, method of generating digest (hashlib.sha1 by default)
+        Default: hashlib.sha1.
+    token_length : int, length of the token (6 by default)
+        Default: 6.
+
+    Returns
+    -------
+    int or str, generated HOTP token.
+
+    Raises
+    ------
+    TypeError: Incorrect secret (expected bytes).
+
+    Notes
+    -----
+    This function generates a one-time password using HMAC-based authentication.
+    The secret key is expected to be base32-encoded and the interval number is used to generate different tokens.
+
+    Examples
+    --------
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=1)
+    765705
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2)
+    816065
+    >>> result = get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2, as_string=True)
+    >>> result == b'816065'
+    True
+
+    """"""
+    # Ensure secret is a bytes-like object (or unicode if base32-encoded)
+    if isinstance(secret, six.string_types):
+        # Convert to bytes
+        secret = secret.encode('utf-8')
+
+    # Remove all spacing from the secret key
+    secret = secret.replace(b' ', b'')
+
+    try:
+        # Decode base32-encoded secret key
+        key = base64.b32decode(secret, casefold=casefold)
+    except (TypeError):
+        raise TypeError('Incorrect secret')
+
+    # Create a message of length 40 with the specified interval number
+    msg = struct.pack('>Q', intervals_no)
+
+    # Compute HMAC digest using the decoded secret key and message
+    hmac_digest = hmac.new(key, msg, digest_method).digest()
+
+    # Extract the ob field from the HMAC digest (first byte is reserved for padding)
+    ob = hmac_digest[19] if six.PY3 else ord(hmac_digest[19])
+
+    # Convert ob to an integer using bitwise AND operation
+    o = ob & 15
+
+    # Compute the token base by extracting the first 16 bits of the HMAC digest and converting it to an integer
+    token_base = struct.unpack('>I', hmac_digest[o:o + 4])[0] & 0x7fffffff
+
+    # Scale the token base to the required length (10 digits)
+    token = token_base % (10 ** token_length)
+
+    # If as_string is True, return a padded string representation of the token
+    if as_string:
+        return six.b('{{:0{}d}}'.format(token_length).format(token))
+    else:
+        return token","Get HMAC-based one-time password on the basis of given secret and
+    interval number.
+
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str or unicode
+    :param intervals_no: interval number used for getting different tokens, it
+        is incremented with each use
+    :type intervals_no: int
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param casefold: True (default), if should accept also lowercase alphabet
+    :type casefold: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: generated HOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=1)
+    765705
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2)
+    816065
+    >>> result = get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2, as_string=True)
+    >>> result == b'816065'
+    True","As a senior Python engineer, write a professional Google-style docstring for this function: def get_hotp(
+        secret,
+        intervals_no,
+        as_string=False,
+        casefold=True,
+        digest_method=hashlib.sha1,
+        token_length=6,
+):
+    """"""
+    Get HMAC-based one-time password on the basis of given secret and
+    interval number.
+
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str or unicode
+    :param intervals_no: interval number used for getting different tokens, it
+        is incremented with each use
+    :type intervals_no: int
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param casefold: True (default), if should accept also lowercase alphabet
+    :type casefold: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: generated HOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=1)
+    765705
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2)
+    816065
+    >>> result = get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2, as_string=True)
+    >>> result == b'816065'
+    True
+    """"""
+    if isinstance(secret, six.string_types):
+        # It is unicode, convert it to bytes
+        secret = secret.encode('utf-8')
+    # Get rid of all the spacing:
+    secret = secret.replace(b' ', b'')
+    try:
+        key = base64.b32decode(secret, casefold=casefold)
+    except (TypeError):
+        raise TypeError('Incorrect secret')
+    msg = struct.pack('>Q', intervals_no)
+    hmac_digest = hmac.new(key, msg, digest_method).digest()
+    ob = hmac_digest[19] if six.PY3 else ord(hmac_digest[19])
+    o = ob & 15
+    token_base = struct.unpack('>I', hmac_digest[o:o + 4])[0] & 0x7fffffff
+    token = token_base % (10 ** token_length)
+    if as_string:
+        # TODO: should as_string=True return unicode, not bytes?
+        return six.b('{{:0{}d}}'.format(token_length).format(token))
+    else:
+        return token","Get HMAC-based one-time password on the basis of given secret and
+    interval number.
+
+    Parameters
+    ----------
+    secret : str or bytes, the base32-encoded string acting as secret key.
+    intervals_no : int, interval number used for getting different tokens,
+        it is incremented with each use.
+    as_string : bool, True if result should be padded string, False otherwise.
+        Default: False (bytes returned).
+    casefold : bool, True (default), if should accept also lowercase alphabet
+        Default: True.
+    digest_method : callable, method of generating digest (hashlib.sha1 by default)
+        Default: hashlib.sha1.
+    token_length : int, length of the token (6 by default)
+        Default: 6.
+
+    Returns
+    -------
+    int or str, generated HOTP token.
+
+    Raises
+    ------
+    TypeError: Incorrect secret (expected bytes).
+
+    Notes
+    -----
+    This function generates a one-time password using HMAC-based authentication.
+    The secret key is expected to be base32-encoded and the interval number is used to generate different tokens.
+
+    Examples
+    --------
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=1)
+    765705
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2)
+    816065
+    >>> result = get_hotp(b'MFRGGZDFMZTWQ2LK', intervals_no=2, as_string=True)
+    >>> result == b'816065'
+    True"
+tadeck/onetimepass,get_totp,"def get_totp(
+        secret,
+        as_string=False,
+        digest_method=hashlib.sha1,
+        token_length=6,
+        interval_length=30,
+        clock=None,
+):
+    """"""Get time-based one-time password on the basis of given secret and time.
+
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :return: generated TOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK')
+    True
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK', as_string=True)
+    False
+    """"""
+    if clock is None:
+        clock = time.time()
+    interv_no = int(clock) // interval_length
+    return get_hotp(
+        secret,
+        intervals_no=interv_no,
+        as_string=as_string,
+        digest_method=digest_method,
+        token_length=token_length,
+    )",llama3.2:1b,Zero-shot,"```
+def get_totp(
+    secret,
+    as_string=False,
+    digest_method=hashlib.sha1,
+    token_length=6,
+    interval_length=30,
+    clock=None
+):
+    """"""
+    Generate a time-based one-time password (TOTP) on the basis of the given secret and current time.
+
+    :param secret: The base32-encoded string acting as the secret key.
+    :type secret: str
+    :param as_string: A flag indicating whether the result should be padded with an empty string or not. Defaults to False.
+    :type as_string: bool
+    :param digest_method: The method used to generate the TOTP digest (default is hashlib.sha1).
+    :type digest_method: callable
+    :param token_length: The length of the TOTP token (default is 6). Can be any positive integer.
+    :type token_length: int
+    :param interval_length: The length of the time interval between attempts (default is 30 seconds). Can be any positive integer.
+    :type interval_length: int
+    :param clock: An optional parameter specifying the current epoch time to generate the TOTP for. Defaults to the current system time.
+    :type clock: int
+
+    Returns:
+        The generated TOTP token.
+
+    :rtype: int or str
+    """"""
+    if clock is None:
+        # Use the current system time as the epoch offset
+        clock = time.time()
+    # Calculate the number of intervals (TOTP periods) elapsed since the start of the epoch
+    interv_no = int(clock) // interval_length
+    # Generate the TOTP token using the provided secret and calculated intervals
+    return get_hotp(
+        secret,
+        intervals_no=interv_no,
+        as_string=as_string,
+        digest_method=digest_method,
+        token_length=token_length,
+    )
+```","Get time-based one-time password on the basis of given secret and time.
+
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :return: generated TOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK')
+    True
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK', as_string=True)
+    False","As a senior Python engineer, write a professional Google-style docstring for this function: def get_totp(
+        secret,
+        as_string=False,
+        digest_method=hashlib.sha1,
+        token_length=6,
+        interval_length=30,
+        clock=None,
+):
+    """"""Get time-based one-time password on the basis of given secret and time.
+
+    :param secret: the base32-encoded string acting as secret key
+    :type secret: str
+    :param as_string: True if result should be padded string, False otherwise
+    :type as_string: bool
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :return: generated TOTP token
+    :rtype: int or str
+
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK')
+    True
+    >>> get_hotp(b'MFRGGZDFMZTWQ2LK', int(time.time())//30) == \
+        get_totp(b'MFRGGZDFMZTWQ2LK', as_string=True)
+    False
+    """"""
+    if clock is None:
+        clock = time.time()
+    interv_no = int(clock) // interval_length
+    return get_hotp(
+        secret,
+        intervals_no=interv_no,
+        as_string=as_string,
+        digest_method=digest_method,
+        token_length=token_length,
+    )","Generate a time-based one-time password (TOTP) on the basis of the given secret and current time.
+
+    :param secret: The base32-encoded string acting as the secret key.
+    :type secret: str
+    :param as_string: A flag indicating whether the result should be padded with an empty string or not. Defaults to False.
+    :type as_string: bool
+    :param digest_method: The method used to generate the TOTP digest (default is hashlib.sha1).
+    :type digest_method: callable
+    :param token_length: The length of the TOTP token (default is 6). Can be any positive integer.
+    :type token_length: int
+    :param interval_length: The length of the time interval between attempts (default is 30 seconds). Can be any positive integer.
+    :type interval_length: int
+    :param clock: An optional parameter specifying the current epoch time to generate the TOTP for. Defaults to the current system time.
+    :type clock: int
+
+    Returns:
+        The generated TOTP token.
+
+    :rtype: int or str"
+tadeck/onetimepass,valid_hotp,"def valid_hotp(
+        token,
+        secret,
+        last=1,
+        trials=1000,
+        digest_method=hashlib.sha1,
+        token_length=6,
+):
+    """"""Check if given token is valid for given secret. Return interval number
+    that was successful, or False if not found.
+
+    :param token: token being checked
+    :type token: int or str
+    :param secret: secret for which token is checked
+    :type secret: str
+    :param last: last used interval (start checking with next one)
+    :type last: int
+    :param trials: number of intervals to check after 'last'
+    :type trials: int
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: interval number, or False if check unsuccessful
+    :rtype: int or bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> valid_hotp(713385, secret, last=1, trials=5)
+    4
+    >>> valid_hotp(865438, secret, last=1, trials=5)
+    False
+    >>> valid_hotp(713385, secret, last=4, trials=5)
+    False
+    """"""
+    if not _is_possible_token(token, token_length=token_length):
+        return False
+    for i in six.moves.xrange(last + 1, last + trials + 1):
+        token_candidate = get_hotp(
+            secret=secret,
+            intervals_no=i,
+            digest_method=digest_method,
+            token_length=token_length,
+        )
+        if token_candidate == int(token):
+            return i
+    return False",llama3.2:1b,Zero-shot,"```
+def valid_hotp(
+    token: int or str,  # token being checked
+    secret: bytes,  # secret for which token is checked
+    last: int = 1,  # start checking with next interval after 'last'
+    trials: int = 1000,  # number of intervals to check after 'last'
+    digest_method: callable = hashlib.sha1,  # method of generating digest (default: SHA-1)
+    token_length: int = 6,  # length of the token
+):
+    """"""
+    Check if given token is valid for given secret. Return interval number that was successful,
+    or False if not found.
+
+    Parameters:
+        token: token being checked
+        secret: secret for which token is checked
+        last: start checking with next interval after 'last' (default: 1)
+        trials: number of intervals to check after 'last' (default: 1000)
+        digest_method: method of generating digest (default: SHA-1)
+        token_length: length of the token (default: 6)
+
+    Returns:
+        interval number, or False if check unsuccessful
+    """"""
+    # Verify that token is not too large for current secret and length
+    if not _is_possible_token(token, token_length=token_length):
+        return False
+
+    # Check intervals starting from 'last' up to 'last + trials'
+    for i in six.moves.xrange(last + 1, last + trials + 1):
+        # Get a potential hotpot candidate based on the current interval and secret
+        token_candidate = get_hotp(
+            secret=secret,
+            intervals_no=i,
+            digest_method=digest_method,
+            token_length=token_length,
+        )
+        # If the potential hotpot is equal to the given token, return its interval number
+        if token_candidate == int(token):
+            return i
+
+    # If no valid hotpot is found, return False
+    return False
+```","Check if given token is valid for given secret. Return interval number
+    that was successful, or False if not found.
+
+    :param token: token being checked
+    :type token: int or str
+    :param secret: secret for which token is checked
+    :type secret: str
+    :param last: last used interval (start checking with next one)
+    :type last: int
+    :param trials: number of intervals to check after 'last'
+    :type trials: int
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: interval number, or False if check unsuccessful
+    :rtype: int or bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> valid_hotp(713385, secret, last=1, trials=5)
+    4
+    >>> valid_hotp(865438, secret, last=1, trials=5)
+    False
+    >>> valid_hotp(713385, secret, last=4, trials=5)
+    False","As a senior Python engineer, write a professional Google-style docstring for this function: def valid_hotp(
+        token,
+        secret,
+        last=1,
+        trials=1000,
+        digest_method=hashlib.sha1,
+        token_length=6,
+):
+    """"""Check if given token is valid for given secret. Return interval number
+    that was successful, or False if not found.
+
+    :param token: token being checked
+    :type token: int or str
+    :param secret: secret for which token is checked
+    :type secret: str
+    :param last: last used interval (start checking with next one)
+    :type last: int
+    :param trials: number of intervals to check after 'last'
+    :type trials: int
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :return: interval number, or False if check unsuccessful
+    :rtype: int or bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> valid_hotp(713385, secret, last=1, trials=5)
+    4
+    >>> valid_hotp(865438, secret, last=1, trials=5)
+    False
+    >>> valid_hotp(713385, secret, last=4, trials=5)
+    False
+    """"""
+    if not _is_possible_token(token, token_length=token_length):
+        return False
+    for i in six.moves.xrange(last + 1, last + trials + 1):
+        token_candidate = get_hotp(
+            secret=secret,
+            intervals_no=i,
+            digest_method=digest_method,
+            token_length=token_length,
+        )
+        if token_candidate == int(token):
+            return i
+    return False","Check if given token is valid for given secret. Return interval number that was successful,
+    or False if not found.
+
+    Parameters:
+        token: token being checked
+        secret: secret for which token is checked
+        last: start checking with next interval after 'last' (default: 1)
+        trials: number of intervals to check after 'last' (default: 1000)
+        digest_method: method of generating digest (default: SHA-1)
+        token_length: length of the token (default: 6)
+
+    Returns:
+        interval number, or False if check unsuccessful"
+tadeck/onetimepass,valid_totp,"def valid_totp(
+        token,
+        secret,
+        digest_method=hashlib.sha1,
+        token_length=6,
+        interval_length=30,
+        clock=None,
+        window=0,
+):
+    """"""Check if given token is valid time-based one-time password for given
+    secret.
+
+    :param token: token which is being checked
+    :type token: int or str
+    :param secret: secret for which the token is being checked
+    :type secret: str
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :param window: compensate for clock skew, number of intervals to check on
+        each side of the current time. (default is 0 - only check the current
+        clock time)
+    :type window: int (positive)
+    :return: True, if is valid token, False otherwise
+    :rtype: bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> token = get_totp(secret)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token+1, secret)
+    False
+    >>> token = get_totp(secret, as_string=True)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token + b'1', secret)
+    False
+    """"""
+    if _is_possible_token(token, token_length=token_length):
+        if clock is None:
+            clock = time.time()
+        for w in range(-window, window+1):
+            if int(token) == get_totp(
+                secret,
+                digest_method=digest_method,
+                token_length=token_length,
+                interval_length=interval_length,
+                clock=int(clock)+(w*interval_length)
+            ):
+                return True
+    return False",llama3.2:1b,Zero-shot,"```
+""""""
+Checks if a given time-based one-time password (TOTP) for a secret is valid.
+
+A TOTP is a type of authentication that requires the user to input their
+security token at regular intervals, based on the current time and a
+secret key. This function verifies whether a provided token matches the expected
+TOTP result generated from a given secret, within a specified clock offset.
+""""""
+def valid_totp(
+    token,
+    secret,
+    digest_method=hashlib.sha1,
+    token_length=6,
+    interval_length=30,
+    clock=None,
+    window=0,
+):
+    """"""
+    Verifies if the provided token is a valid TOTP for the given secret.
+
+    :param token: The token to be checked.
+    :type token: int or str
+    :param secret: The secret key used to generate the TOTP.
+    :type secret: str
+    :param digest_method: The method of generating the TOTP digest (default is SHA-1).
+    :type digest_method: callable
+    :param token_length: The expected length of the TOTP token (default is 6).
+    :type token_length: int
+    :param interval_length: The expected interval length between TOTP checks in seconds (default is 30).
+    :type interval_length: int
+    :param clock: The time offset from the current time to generate TOTP for, if None (default is the current time). Defaults to None.
+    :type clock: int
+    :param window: Number of intervals to check on each side of the current time. Positive values increase accuracy, but may introduce skew; 0 means only use the current clock time.
+    :type window: int (positive)
+    :return: True if the token is valid, False otherwise.
+    :rtype: bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> token = get_totp(secret)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token+1, secret)
+    False
+    >>> token = get_totp(secret, as_string=True)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token + b'1', secret)
+    False
+    """"""
+    # Check if the provided token is a possible TOTP token.
+    _is_possible_token(token, token_length=token_length)
+
+    # If no clock offset is specified, use the current time as the clock.
+    if clock is None:
+        clock = time.time()
+
+    # Iterate over a range of window sizes to find a match within the specified interval length.
+    for w in range(-window, window+1):
+        # Check if the token matches the generated TOTP result based on the secret and interval length.
+        if int(token) == get_totp(
+            secret,
+            digest_method=digest_method,
+            token_length=token_length,
+            interval_length=interval_length,
+            clock=int(clock)+(w*interval_length)
+        ):
+            # If a match is found, return True immediately.
+            return True
+    # If no match is found after checking all window sizes, return False.
+    return False
+```","Check if given token is valid time-based one-time password for given
+    secret.
+
+    :param token: token which is being checked
+    :type token: int or str
+    :param secret: secret for which the token is being checked
+    :type secret: str
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :param window: compensate for clock skew, number of intervals to check on
+        each side of the current time. (default is 0 - only check the current
+        clock time)
+    :type window: int (positive)
+    :return: True, if is valid token, False otherwise
+    :rtype: bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> token = get_totp(secret)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token+1, secret)
+    False
+    >>> token = get_totp(secret, as_string=True)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token + b'1', secret)
+    False","As a senior Python engineer, write a professional Google-style docstring for this function: def valid_totp(
+        token,
+        secret,
+        digest_method=hashlib.sha1,
+        token_length=6,
+        interval_length=30,
+        clock=None,
+        window=0,
+):
+    """"""Check if given token is valid time-based one-time password for given
+    secret.
+
+    :param token: token which is being checked
+    :type token: int or str
+    :param secret: secret for which the token is being checked
+    :type secret: str
+    :param digest_method: method of generating digest (hashlib.sha1 by default)
+    :type digest_method: callable
+    :param token_length: length of the token (6 by default)
+    :type token_length: int
+    :param interval_length: length of TOTP interval (30 seconds by default)
+    :type interval_length: int
+    :param clock: time in epoch seconds to generate totp for, default is now
+    :type clock: int
+    :param window: compensate for clock skew, number of intervals to check on
+        each side of the current time. (default is 0 - only check the current
+        clock time)
+    :type window: int (positive)
+    :return: True, if is valid token, False otherwise
+    :rtype: bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> token = get_totp(secret)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token+1, secret)
+    False
+    >>> token = get_totp(secret, as_string=True)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token + b'1', secret)
+    False
+    """"""
+    if _is_possible_token(token, token_length=token_length):
+        if clock is None:
+            clock = time.time()
+        for w in range(-window, window+1):
+            if int(token) == get_totp(
+                secret,
+                digest_method=digest_method,
+                token_length=token_length,
+                interval_length=interval_length,
+                clock=int(clock)+(w*interval_length)
+            ):
+                return True
+    return False","Checks if a given time-based one-time password (TOTP) for a secret is valid.
+
+A TOTP is a type of authentication that requires the user to input their
+security token at regular intervals, based on the current time and a
+secret key. This function verifies whether a provided token matches the expected
+TOTP result generated from a given secret, within a specified clock offset.
+  
+    Verifies if the provided token is a valid TOTP for the given secret.
+
+    :param token: The token to be checked.
+    :type token: int or str
+    :param secret: The secret key used to generate the TOTP.
+    :type secret: str
+    :param digest_method: The method of generating the TOTP digest (default is SHA-1).
+    :type digest_method: callable
+    :param token_length: The expected length of the TOTP token (default is 6).
+    :type token_length: int
+    :param interval_length: The expected interval length between TOTP checks in seconds (default is 30).
+    :type interval_length: int
+    :param clock: The time offset from the current time to generate TOTP for, if None (default is the current time). Defaults to None.
+    :type clock: int
+    :param window: Number of intervals to check on each side of the current time. Positive values increase accuracy, but may introduce skew; 0 means only use the current clock time.
+    :type window: int (positive)
+    :return: True if the token is valid, False otherwise.
+    :rtype: bool
+
+    >>> secret = b'MFRGGZDFMZTWQ2LK'
+    >>> token = get_totp(secret)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token+1, secret)
+    False
+    >>> token = get_totp(secret, as_string=True)
+    >>> valid_totp(token, secret)
+    True
+    >>> valid_totp(token + b'1', secret)
+    False"
