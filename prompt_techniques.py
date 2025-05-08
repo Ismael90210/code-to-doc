@@ -2,8 +2,10 @@ import requests
 import json
 
 class PromptTechniques:
-    def __init__(self, model):
+    def __init__(self, model, max_retries=3, initial_timeout=30):
         self.model = model
+        self.max_retries = max_retries
+        self.initial_timeout = initial_timeout
 
         # Zero Shot Prompts
         self.zero_shot_prompts = [
@@ -61,32 +63,7 @@ class PromptTechniques:
             f"Maintainer's view: 1) Evolution path 2) Dependencies 3) Technical debt 4) Write docs: {{code}}",
             f"Expert documentation: 1) Core algorithm 2) Optimization 3) Tradeoffs 4) Write formal docs: {{code}}"
         ]
-
-    def generate_with_ollama(self, prompt):
-
-        try:
-            response = requests.post(
-                "http://localhost:11434/api/generate",
-                json={"model": self.model, "prompt": prompt, "stream": True},
-                stream=True,
-                timeout=30
-            )
-        except requests.exceptions.RequestException as e:
-            return f"[ERROR] Ollama request failed: {e}"
-
-        result = ""
-        for line in response.iter_lines():
-            if line:
-                try:
-                    data = json.loads(line.decode("utf-8"))
-                    result += data.get("response", "")
-                    if data.get("done", False):
-                        break
-                except json.JSONDecodeError:
-                    continue
-
-        return result.strip() or "[No response from model]"
-
+        
     # Zero Shot Prompting
     def zero_shot_prompting(self, code, num_prompts):
         selected = self.zero_shot_prompts[:num_prompts]
