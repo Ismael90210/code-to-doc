@@ -55,7 +55,74 @@ examples = [{"input": "def add(a, b): return a + b", "output": "Parameters: a fi
             {
                 "input": "def is_palindrome(s): return s == s[::-1]",
                 "output": "Checks if a string is a palindrome.\n\nArgs:\n    s (str): The string to check.\n\nReturns:\n    bool: True if the string is a palindrome, False otherwise."
-            }
+            },
+            {
+                "input": "def sum_list(lst): return sum(lst)",
+                "output": "Calculates the sum of all elements in a list.\n\nArgs:\n    lst (list): A list of numeric values.\n\nReturns:\n    int or float: The sum of the list elements."
+            },
+            {
+                "input": "def get_unique_elements(lst): return list(set(lst))",
+                "output": "Returns unique elements from a list.\n\nArgs:\n    lst (list): Input list.\n\nReturns:\n    list: List of unique elements."
+            },
+            {
+                "input": "def capitalize_words(s): return ' '.join(word.capitalize() for word in s.split())",
+                "output": "Capitalizes the first letter of each word in a string.\n\nArgs:\n    s (str): Input string.\n\nReturns:\n    str: String with capitalized words."
+            },
+            {
+                "input": "def multiply_list(lst): result = 1; for x in lst: result *= x; return result",
+                "output": "Calculates the product of all elements in a list.\n\nArgs:\n    lst (list): A list of numbers.\n\nReturns:\n    int or float: The product of the list elements."
+            },
+            {
+                "input": "def flatten_list(nested_list): return [item for sublist in nested_list for item in sublist]",
+                "output": "Flattens a list of lists into a single list.\n\nArgs:\n    nested_list (list): List of lists.\n\nReturns:\n    list: Flattened list."
+            },
+            {
+                "input": "def get_file_extension(filename): return filename.split('.')[-1]",
+                "output": "Gets the file extension from a filename.\n\nArgs:\n    filename (str): Name of the file.\n\nReturns:\n    str: File extension."
+            },
+            {
+                "input": "def is_substring(sub, s): return sub in s",
+                "output": "Checks if a substring exists within a string.\n\nArgs:\n    sub (str): Substring.\n    s (str): String to search.\n\nReturns:\n    bool: True if substring is found, False otherwise."
+            },
+            {
+                "input": "def find_max(lst): return max(lst)",
+                "output": "Finds the maximum value in a list.\n\nArgs:\n    lst (list): List of numbers.\n\nReturns:\n    int or float: Maximum value."
+            },
+            {
+                "input": "def count_occurrences(lst, x): return lst.count(x)",
+                "output": "Counts how many times x appears in a list.\n\nArgs:\n    lst (list): List of elements.\n    x: Element to count.\n\nReturns:\n    int: Number of occurrences."
+            },
+            {
+                "input": "def get_keys(d): return list(d.keys())",
+                "output": "Returns the keys of a dictionary.\n\nArgs:\n    d (dict): Input dictionary.\n\nReturns:\n    list: List of keys."
+            },
+            {
+                "input": "def get_values(d): return list(d.values())",
+                "output": "Returns the values of a dictionary.\n\nArgs:\n    d (dict): Input dictionary.\n\nReturns:\n    list: List of values."
+            },
+            {
+                "input": "def reverse_list(lst): return lst[::-1]",
+                "output": "Reverses a list.\n\nArgs:\n    lst (list): Input list.\n\nReturns:\n    list: Reversed list."
+            },
+            {
+                "input": "def square_list(lst): return [x**2 for x in lst]",
+                "output": "Squares each element in a list.\n\nArgs:\n    lst (list): List of numbers.\n\nReturns:\n    list: List of squared numbers."
+            },
+            {
+                "input": "def zip_lists(a, b): return list(zip(a, b))",
+                "output": "Zips two lists together into pairs.\n\nArgs:\n    a (list): First list.\n    b (list): Second list.\n\nReturns:\n    list: List of tuples pairing elements from a and b."
+            },
+            {
+                "input": "def filter_even(lst): return [x for x in lst if x % 2 == 0]",
+                "output": "Filters even numbers from a list.\n\nArgs:\n    lst (list): List of numbers.\n\nReturns:\n    list: List of even numbers."
+            },
+            {
+                "input": "def filter_odd(lst): return [x for x in lst if x % 2 != 0]",
+                "output": "Filters odd numbers from a list.\n\nArgs:\n    lst (list): List of numbers.\n\nReturns:\n    list: List of odd numbers."
+            },
+            {
+                "input": "def join_strings(lst): return ' '.join(lst)",
+                "output": "Joins a list of strings into a single string with spaces.\n\nArgs:\n    lst (list): List of strings.\n\nReturns:\n    str: Combined string."}
             ]
 def save_to_csv(output_path, records):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
